@@ -1,0 +1,11 @@
+.icons_toggle{
+    position: fixed;
+	padding: 15px 20px 15px 15px;
+	margin-top: 650px;
+	color: white;
+	cursor: pointer;
+	background-color: #648B79;
+	z-index: 1000000;
+	font-size: 2em;
+	opacity: 0;
+}

@@ -1,0 +1,32 @@
+
+
+
+<div class="header">
+	<div class="container-fluid">
+
+
+<!--
+	  <div class="row fullWidth">
+	    <div class="paddedDiv">
+
+	     <a href="http://geo.lmz-bw.de" target="_blank"><img src="assets/lmz-geoportal-logo-transparent.png" border="0" style="pointer-events:auto;"></a>
+
+	    </div>
+	  </div>
+
+//-->
+
+	   <div class="row fullWidth">
+    <div class="paddedDiv">
+      <!-- A simple navigator to get us somewhere on the map -->
+			<basemaps></basemaps>
+      <map-navigator></map-navigator>
+    </div>
+  </div>
+
+	</div>
+</div>
+
+ <!-- The actual leaflet map -->
+
+<leaflet-map (layerAdded)="__onLayerAdded($event)"></leaflet-map>

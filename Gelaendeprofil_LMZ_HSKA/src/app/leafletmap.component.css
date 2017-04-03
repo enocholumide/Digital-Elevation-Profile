@@ -1,0 +1,11 @@
+.leafletMapComponent 
+{ 
+	height: 99%;
+	z-index: 3;
+	display: block;
+}
+
+.my-div-icon{
+	position: fixed;
+	background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/images/marker-icon.png');
+}
