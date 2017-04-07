@@ -1,14 +1,18 @@
-/// <reference path="../typings/leaflet-geocoder-mapzen.d.ts"/>
+/// <reference path="../typings/leaflet-geocoder-mapzen.d.ts"/> 
+/// <reference path="../typings/leaflet.coordinates.d.ts"/>
 
 // Platform dependent imports
  import { Component
         , EventEmitter
         , Output
         , Input
+        , Injectable
+        , ViewChild
         } from '@angular/core';
 
 // Leaflet plug-ins
 import * as L from 'leaflet';
+import { Map } from 'leaflet';
 import 'leaflet.locatecontrol';
 
 // Untyped leaflet plugins import
@@ -16,26 +20,66 @@ import 'leaflet-geocoder-mapzen';
 
 
 
+
 // D3
 import * as d3 from 'd3';
 
-import { Map } from 'leaflet';
+
 import { MapNavComponent } from './navigator/navigator.component';
+import { BasemapsComponent  } from './basemaps/basemaps.component';
 
  @Component({
    selector: 'leaflet-map',
    templateUrl: 'leafletmap.component.html',
-   styleUrls: ['leafletmap.component.css']
+   styleUrls: ['leafletmap.component.css'],
  })
+ 
 
  export class LeafletMap {
 
    // leaflet map
-   protected _map: Map;
+   public _map: Map;
+  
+   public baseLayers  = [
+    // index 0
+    L.tileLayer('//{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+        minZoom: 0,
+        label: 'Toner Lite'  // optional label used for tooltip
+    }),
+    // index 1
+    L.tileLayer('//{s}.tile.stamen.com/toner/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+        minZoom: 0,
+        label: 'Toner'
+    }),
+    // index 2
+    L.tileLayer('//{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        subdomains: 'abcd',
+        maxZoom: 16,
+        minZoom: 1,
+        label: 'Watercolor'
+    }),
+    // index 3
+    L.tileLayer.wms('https://maps.ngdc.noaa.gov/soap/web_mercator/gebco08_hillshade/MapServer/WMSServer', {
+        layers: 'GEBCO_08 hillshade with Natural Earth 2',
+        label: 'GEBCO Hillshade'
+    })
+];
+
+
 
    // Outputs
    @Output() layerAdded: EventEmitter<any> = new EventEmitter();
    @Output() layerRemoved: EventEmitter<any> = new EventEmitter();
+   
+
+   
 
    constructor() {
      // empty
@@ -50,7 +94,12 @@ import { MapNavComponent } from './navigator/navigator.component';
    * @return nothing The leaflet map is created, initialized with the supplied parameters,
    * and assigned to the DIV created in the component template.
    * A single tile layer is addressed
+   * 
+   * 
    */
+
+
+  
    public initialize(params: Object, tileData: Object): void {
      // Guys, we should look into the div id for this compoent with the index divs to make page more responsive
      this._map =  L.map('leaflet-map-component',
@@ -63,15 +112,32 @@ import { MapNavComponent } from './navigator/navigator.component';
      this._map.on('layeradd'   , () => {this.__onLayerAdded(); } );
      this._map.on('layerremove', () => {this.__onLayerRemoved(); } );
 
+     /**
+    var j = L.tileLayer.wms('https://maps.ngdc.noaa.gov/soap/web_mercator/etopo1_hillshade/MapServer/WMSServer', {
+                layers: 'ETOPO1 Hillshade',
+                label: 'Hillshade' });
+                */
+    
+                
+    this.baseLayers[0].addTo(this._map);
+
+
      // add a single tile layer
-      L.tileLayer(tileData['url'], { attribution: tileData['attribution'] }).addTo(this._map);
+     // L.tileLayer(tileData['url'], { attribution: tileData['attribution'] }).addTo(this._map);
     
      // Leaflet installed typed plug-ins
       L.control.zoom({position: 'bottomright'}).addTo(this._map);
       L.control.locate({position: 'bottomright'}).addTo(this._map);
-  
+      // L.control.mouseCoordinate({utm:true,utmref:true,position:'topright'}).addTo(this._map);
+
+      // L.control.coordinates({position:"bottomleft"}).addTo(this._map);
+
+
       this._searchedLocation ();
 
+      //this._changeBasemapLayer('C');
+
+      
  
    } 
 
@@ -103,6 +169,7 @@ import { MapNavComponent } from './navigator/navigator.component';
 
             .bindTooltip(searchedAddress , {permanent: true, direction: 'top', offset: [0, -5, ], })
             .addTo(this._map);
+        
    }
 
    protected __onLayerAdded(): void {
@@ -112,6 +179,7 @@ import { MapNavComponent } from './navigator/navigator.component';
 
    protected __onLayerRemoved(): void {
      // perform additional logic on layer removed here
+         
      this.layerRemoved.emit();
    }
 
@@ -153,5 +221,41 @@ import { MapNavComponent } from './navigator/navigator.component';
             .bindTooltip(_selectedAddress , {permanent: true, direction: 'top', offset: [0, -5], })
             .addTo(this._map)
       });
+
    }
+
+   public _changeBasemapLayer(selector: number) {
+    
+
+    for (var i:number = 0; i < this.baseLayers.length; i++) {
+      this._map.removeLayer(this.baseLayers[i]);
+    }
+
+    this.baseLayers[selector].addTo(this._map);
+
+
+      /**
+      if (selector === 'A') {
+
+        
+        var OSM = L.tileLayer.wms('https://maps.ngdc.noaa.gov/soap/web_mercator/gebco08_hillshade/MapServer/WMSServer', {
+          layers: 'GEBCO_08 hillshade with Natural Earth 2',
+          label: 'GEBCO Hillshade'
+        }).addTo(this._map);
+
+      } else if (selector === 'B') {
+        var j = L.tileLayer('//{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', {
+          attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+          subdomains: 'abcd',
+          maxZoom: 16,
+          minZoom: 1,
+          label: 'Watercolor'
+      }).addTo(this._map);
+      }
+
+      */
+
+    }
+
+
 }

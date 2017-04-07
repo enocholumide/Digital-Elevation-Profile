@@ -1,3 +1,5 @@
+/// <reference path="../typings/leaflet.mousecoordinate.d.ts"/>
+
 /** 
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
@@ -34,8 +36,10 @@ import { HttpModule    } from '@angular/http';
 import { AppComponent     } from './app.component';
 import { LeafletMap       } from './LeafletMap.component';
 import { LoadingComponent } from './loading/loading.component';
-import { MapNavComponent  } from './navigator/navigator.component'; 
+import { MapNavComponent  } from './navigator/navigator.component';
 import { BasemapsComponent  } from './basemaps/basemaps.component';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { SideBarComponent } from './sidebar/sidebar.component';
  
 // the shared model and dispatcher modules
 import { SharedModelModule      } from './sharedModel.module';
@@ -43,7 +47,7 @@ import { SharedDispatcherModule } from './sharedDispatcher.module';
 
 @NgModule({
   declarations: [
-    AppComponent, LeafletMap, LoadingComponent, MapNavComponent, BasemapsComponent
+    AppComponent, LeafletMap, LoadingComponent, MapNavComponent, BasemapsComponent, SideBarComponent
   ],
 
   imports: [
@@ -51,7 +55,7 @@ import { SharedDispatcherModule } from './sharedDispatcher.module';
     HttpModule,
     FormsModule,
     SharedModelModule.forRoot(),
-    SharedDispatcherModule.forRoot()
+    SharedDispatcherModule.forRoot(),  NgbModule.forRoot()
   ],
 
   bootstrap: [AppComponent]

@@ -1,13 +1,14 @@
 $(document).ready(function(){
-  $(".fixed-size-square").click(function(){
-    $(".icons").addClass("hide_icons");
-    $(".fixed-size-square").addClass("opacity_one_icons");
+  $(".fa-chevron-circle-right").click(function(){
+    $(".icons_menu").addClass("hide_icons");
+    $(".icons_toggle").addClass("display_icons");
   });
 
-  $(".fixed-size-square").click(function(){
-    $(".icons").removeClass("hide_icons");
-    $(".fixed-size-square").removeClass("opacity_one_icons");
+  $(".icons_toggle").click(function(){
+    $(".icons_menu").removeClass("hide_icons");
+    $(".icons_toggle").removeClass("display_icons");
   });
+
 });
 
 

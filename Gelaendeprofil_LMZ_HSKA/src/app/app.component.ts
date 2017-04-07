@@ -15,12 +15,15 @@
  */
 
 // platform imports
-import {  Component 
+import {  Component
         , OnInit
         , AfterViewInit
         , ViewChild
         , ChangeDetectorRef
        } from '@angular/core';
+
+
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 // leaflet map and loading components and basemaps component
 import { LeafletMap       } from './LeafletMap.component';
@@ -49,7 +52,7 @@ import { Subscription } from 'rxjs/Subscription';
 
   templateUrl: 'app.component.html',
 
-  styleUrls: ['app.component.css']
+  styleUrls: ['app.component.css'],
 })
 
 /**
@@ -65,6 +68,7 @@ import { Subscription } from 'rxjs/Subscription';
 
    // access the leaflet map
    @ViewChild(LeafletMap) _leafletMap: LeafletMap;
+   
 
  /**
    * Construct the main app component

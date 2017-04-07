@@ -9,3 +9,66 @@
 	position: fixed;
 	background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/images/marker-icon.png');
 }
+
+
+
+.icons_toggle{
+	z-index: 50000;
+	position: fixed;
+	right:50px;
+	bottom:50px;
+	cursor: pointer;
+}
+
+.icons_menu{
+	z-index: 5;
+	position: fixed;
+	right: 80px;
+	bottom: 50px;
+	width: 200px;
+	margin-left:0px;
+	overflow: hidden;
+	height: 50px;
+	background-color: rgba(17, 17, 17, 0.9);
+	opacity: 0.9;
+	transition: all 0.4s ease-in-out;
+}
+
+.icon_1{
+	float:right;
+	color: white;
+	cursor: pointer;
+}
+
+.icon_2{
+	right: 50px;
+	color: green;
+	cursor: pointer;
+}
+
+.icon_3{
+	right: 100px;
+	color: blue;
+	cursor: pointer;
+}
+
+.icon_4{
+	right: 150px;
+	color: blue;
+	cursor: pointer;
+}
+
+.fa-chevron-circle-right{
+	left: 2px;
+	color: yellow;
+	cursor: pointer;
+}
+
+.hide_icons{
+	width: 0px;
+}
+
+.display_icons{
+	opacity: 1;
+	transition: all 0.4s ease-in-out;
+}
