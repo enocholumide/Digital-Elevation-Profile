@@ -125,6 +125,13 @@ import { BasemapsComponent  } from './basemaps/basemaps.component';
      // add a single tile layer
      // L.tileLayer(tileData['url'], { attribution: tileData['attribution'] }).addTo(this._map);
     
+     //Scale  //Anja
+     L.control.scale({
+       position: 'bottomright', 
+       metric: true,
+       imperial: false,
+       }).addTo(this._map);
+     
      // Leaflet installed typed plug-ins
       L.control.zoom({position: 'bottomright'}).addTo(this._map);
       L.control.locate({position: 'bottomright'}).addTo(this._map);
