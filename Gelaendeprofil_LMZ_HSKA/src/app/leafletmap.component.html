@@ -1,13 +1,23 @@
 <div id="leaflet-map-component" class="leafletMapComponent"></div>
-
-<i class="fa fa-bars icons_toggle"></i>
-<div class="icons_menu">
-        <div>
-            <i class="fa fa-chevron-circle-left icon_1" (click)="_changeBasemapLayer(0)"></i>
-            <i class="fa fa-chevron-circle-left icon_2"(click)="_changeBasemapLayer(1)"></i>
-            <i class="fa fa-chevron-circle-left icon_3"(click)="_changeBasemapLayer(2)"></i>
-            <i class="fa fa-chevron-circle-left icon_4"(click)="_changeBasemapLayer(3)"></i>
-            <i class="fa fa-chevron-circle-right"></i>  
-        </div>       
-</div>
-
+	
+<!--  <div class="layersToggle" [ngStyle]="{'background-image': 'url(' + currentImage + ')'}"> </div> -->
+	
+<!--
+<section class="bottomContainer">
+	
+	
+	<div class="baseLayers">
+		<div class="icon1" (click)="_changeBasemapLayer(0)">
+			<h3 class="description">OSM</h3>
+		</div>
+		<div class="icon2" (click)="_changeBasemapLayer(1)"></div>
+		<div class="icon3" (click)="_changeBasemapLayer(2)"></div>
+		<div class="icon4" (click)="_changeBasemapLayer(3)"></div>
+		<div class="icon5" (click)="_changeBasemapLayer(4)"></div>
+		
+		<i class="fa fa-chevron-circle-right layersClose"></i>
+	</div>
+	
+</section>
+-->
+<input class="latlongMouse" value="{{coords}}" required />

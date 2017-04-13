@@ -119,7 +119,7 @@ import { Subscription } from 'rxjs/Subscription';
        case BasicActions.ADDRESS:
          location = <TSMT$Location> data['location'];
 
-         this._leafletMap.toLocation(location.latitude, location.longitude, location.address);
+        // this._leafletMap.toLocation(location.latitude, location.longitude, location.address);
        break;
      }
    }

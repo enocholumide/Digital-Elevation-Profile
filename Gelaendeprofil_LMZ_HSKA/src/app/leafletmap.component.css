@@ -5,70 +5,171 @@
 	display: block;
 }
 
-.my-div-icon{
-	position: fixed;
-	background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/images/marker-icon.png');
-}
-
-
-
-.icons_toggle{
-	z-index: 50000;
-	position: fixed;
-	right:50px;
-	bottom:50px;
-	cursor: pointer;
-}
-
-.icons_menu{
+.bottomContainer {
 	z-index: 5;
 	position: fixed;
-	right: 80px;
-	bottom: 50px;
-	width: 200px;
+	right: 135px;
+	bottom: 37px;
+	min-width: 560px;
+	height: 63px;
 	margin-left:0px;
 	overflow: hidden;
-	height: 50px;
-	background-color: rgba(17, 17, 17, 0.9);
 	opacity: 0.9;
 	transition: all 0.4s ease-in-out;
+	border-radius: 3px;
 }
 
-.icon_1{
-	float:right;
-	color: white;
-	cursor: pointer;
-}
-
-.icon_2{
-	right: 50px;
-	color: green;
-	cursor: pointer;
-}
-
-.icon_3{
-	right: 100px;
-	color: blue;
-	cursor: pointer;
-}
-
-.icon_4{
-	right: 150px;
-	color: blue;
-	cursor: pointer;
-}
-
-.fa-chevron-circle-right{
-	left: 2px;
-	color: yellow;
-	cursor: pointer;
-}
-
-.hide_icons{
-	width: 0px;
-}
-
-.display_icons{
-	opacity: 1;
+.layersToggle {
+	z-index: 5;
+	position: fixed;
+	right: 60px;
+	bottom: 37px;
+	width: 63px;
+	height: 63px;
+	margin-left:0px;
+	overflow: hidden;
+	background-color: blue;
+	opacity: 0.9;
 	transition: all 0.4s ease-in-out;
+	border-radius: 3px;
+	cursor: pointer;
+	transition: all 0.8s ease-in-out;
+	box-shadow: 0 0 10px rgba(81, 203, 238, 1);
+}
+
+
+.baseLayers {
+	position: absolute;
+	float: right;
+	right: 0px;
+	bottom: 0px;
+	min-width: 50px;
+	height: inherit;
+	transition: all 1.0s ease-in-out;
+}
+
+.layersToggle:hover {
+	box-shadow: 0 0 35px rgba(81, 203, 238, 1);
+}
+
+.latlongMouse {
+	z-index:500;
+	position: fixed;
+	float: left;
+	left: 0px;
+	bottom: 10px;
+	padding: 2px;
+	font-size: 10px;
+	color: #626262;
+	width: 200px;
+	min-width:250px;
+	border: none;
+	background-color:  rgba(255, 255, 255, 0.5);
+	}
+
+.icon1 {
+	position: relative;
+	float: right;
+	margin-left: 5px;
+	min-width: 63px;
+	min-height: 63px;
+	background-color: blue;
+	border-radius: 3px;
+	background-image: url('./assets/icons/cartodb_positron.png');
+	background-size: cover; 
+    background-position: center;
+    cursor: pointer;
+}
+
+.icon2 {
+	position: relative;
+	float: right;
+	margin-left: 5px;
+	margin-right: 5px;
+	min-width: 63px;
+	min-height: 63px;
+	background-color: green;
+	border-radius: 3px;
+	background-image: url('./assets/icons/esri_oceanbasemap.png');
+	background-size: cover; 
+    background-position: center;
+    cursor: pointer;
+}
+
+.icon3 {
+	position: relative;
+	float: right;
+	margin-left: 5px;
+	margin-right: 5px;
+	min-width: 63px;
+	min-height: 63px;
+	background-color: green;
+	border-radius: 3px;
+	background-image: url('./assets/icons/esri_worldterrain.png');
+	background-size: cover; 
+    background-position: center;
+    cursor: pointer;
+}
+
+.icon4 {
+	position: relative;
+	float: right;
+	margin-left: 5px;
+	margin-right: 5px;
+	min-width: 63px;
+	min-height: 63px;
+	background-color: green;
+	border-radius: 3px;
+	background-image: url('./assets/icons/here_normalday.png');
+	background-size: cover; 
+    background-position: center;
+    cursor: pointer;
+}
+.icon5 {
+	position: relative;
+	float: right;
+	margin-left: 5px;
+	margin-right: 5px;
+	min-width: 63px;
+	min-height: 63px;
+	background-color: green;
+	border-radius: 3px;
+	background-image: url('./assets/icons/openstreetmap_de.png');
+	background-size: cover; 
+    background-position: center;
+    cursor: pointer;
+}
+
+.description{
+	position: absolute;
+	bottom:0;
+	width: inherit;
+	text-align:center;
+	font-size: 7px;
+	background-color: white;
+	
+}
+
+
+.icon1:hover{
+	
+}
+
+.layersClose{
+	float:left;
+	cursor: pointer;
+}
+
+.layersClose:hover{
+	color:red;
+}
+
+.hide_layers{
+	margin-right: -600px;
+	transition: all 0.8s ease-in-out;
+}
+
+.show_layers{
+	opacity: 1;
+	transition: all 0.8s ease-in-out;
 }
