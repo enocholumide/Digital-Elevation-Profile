@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,7 @@ export class FluxComponent implements OnDestroy
   {
     // subscribe this component to model updates
     this._subject                  = new Subject<any>();
-    let subscription: Subscription = this._subject.subscribe( (data:Object): void => this.__onModelUpdate(data) ); 
+    let subscription: Subscription = this._subject.subscribe( (data: Object): void => this.__onModelUpdate(data) );
 
     this._dispatcher.subscribe(this._subject);
   }
@@ -62,8 +62,8 @@ export class FluxComponent implements OnDestroy
     this._dispatcher.unsubscribe(this._subject);
   }
 
-  // update the component based on new model data. 
-  protected __onModelUpdate(data:Object): void
+  // update the component based on new model data.
+  protected __onModelUpdate(data: Object): void
   {
     // override in sub-class
   }

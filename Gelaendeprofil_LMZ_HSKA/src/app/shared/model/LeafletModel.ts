@@ -1,25 +1,9 @@
-/** 
- * Copyright 2016 Jim Armstrong (www.algorithmist.net)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 /**
  * LeafletModel - This is the global store for the Leaflet example application.  Data placed into the store is derived from the Angular 2
  * Leaflet starter, https://github.com/haoliangyu/angular2-leaflet-starter
  *
  * The model is Redux-style in the sense that it maintains immutability, accepts action dispatch with type and payload,
- * internally reduces the model as needed, and then sends copies of relevant slices of the model to subscribers. 
+ * internally reduces the model as needed, and then sends copies of relevant slices of the model to subscribers.
  *
  * @author Jim Armstrong (www.algorithmist.net)
  *
@@ -62,10 +46,10 @@
    private _action: number;
 
    // has airport data been fetched?
-   private _airportsFetched: boolean = false;
+   private _airportsFetched = false;
 
    // subscribers to model updates
-   private _subscribers:Array<Subject<any>>;
+   private _subscribers: Array<Subject<any>>;
 
   /**
    * Construct a new Leaflet model
@@ -74,24 +58,24 @@
    *
    * @param locationService: LocationServide Injected location service (get current location based on IP address)
    */
-   constructor(private _geocoder: Geocode, private _locationService: LocationService) 
+   constructor(private _geocoder: Geocode, private _locationService: LocationService)
    {
-     if (LeafletModel._instance instanceof LeafletModel) 
-       return LeafletModel._instance;
-     
+     if (LeafletModel._instance instanceof LeafletModel)
+       { return LeafletModel._instance; }
+
      // define the structure of the global application store
      this._store['location'] = new TSMT$Location();
 
-     this._store['tileData'] = { 
-       //url: "https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg",
-      url: "http://{s}.osm.maptiles.xyz/{z}/{x}/{y}.png",
+     this._store['tileData'] = {
+       // url: "https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg",
+      url: 'http://{s}.osm.maptiles.xyz/{z}/{x}/{y}.png',
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'
      };
 
      this._store['mapParams'] = {
        zoomControl: true
        , center: L.latLng(49, 8.3)  // I live in Karlsruhe, DE
-       , zoom: 8 
+       , zoom: 8
        , minZoom: 4
        , maxZoom: 19
      };
@@ -117,7 +101,7 @@
    {
      // for a full-on, production app, would want to make this test tighter
      if (subject)
-       this._subscribers.push(subject);
+       { this._subscribers.push(subject); }
    }
 
   /**
@@ -135,11 +119,11 @@
        let len: number = this._subscribers.length;
        let i: number;
 
-       for (i=0; i<len; ++i)
+       for (i = 0; i < len; ++i)
        {
          if (this._subscribers[i] === subject)
          {
-           this._subscribers.splice(i,1);
+           this._subscribers.splice(i, 1);
            break;
          }
        }
@@ -157,10 +141,10 @@
    *
    * @return Nothing - All subscribers are notified after the model is updated
    */
-   public dispatchAction(action: number, payload: Object=null): void
+   public dispatchAction(action: number, payload: Object= null): void
    {
      let validAction: Boolean = false;
-     let data:Object;
+     let data: Object;
 
      this._action = action;
      switch (this._action)
@@ -177,14 +161,14 @@
          let location: TSMT$Location = <TSMT$Location> this._store['location'];
 
          this._store['action'] = this._action;
-        
+
          this._locationService.getLocation()
                               .subscribe( data  => this.__onCurrentLocation(data),
                                           error => this.__onLocationError() );
 
          validAction = false;    // wait until service data is completely processed before responding
        break;
-       
+
        case BasicActions.ADDRESS:
          if (payload.hasOwnProperty('address'))
          {
@@ -204,7 +188,7 @@
 
      // immediately update all subscribers?
      if (validAction)
-       this.__updateSubscribers();
+       { this.__updateSubscribers(); }
    }
 
    private __updateSubscribers(): void
@@ -217,7 +201,7 @@
      let store: Object           = JSON.parse( JSON.stringify(this._store) );  // this isn't as robust as you may have been led to believe
      store['location']           = location.clone();                           // this is the hack
 
-     this._subscribers.map( (s:Subject<any>) => s.next(store) );
+     this._subscribers.map( (s: Subject<any>) => s.next(store) );
    }
 
    // update the location in the global store and broacast to subscribers
@@ -230,7 +214,7 @@
          let location = (<TSMT$Location> data).clone();
 
          if (location.isError)
-           this.__onAddressError();
+           { this.__onAddressError(); }
          else
          {
            this._store['location'] = location;
@@ -246,11 +230,11 @@
    private __onLocationError(): void
    {
      // for purposes of error information, we can 'fake' a global store as only the action is required for subsequent action
-     this._subscribers.map( (s:Subject<any>) => s.next({'action': BasicActions.LOCATION_ERROR}) );
+     this._subscribers.map( (s: Subject<any>) => s.next({'action': BasicActions.LOCATION_ERROR}) );
    }
-   
+
    private __onAddressError(): void
    {
-     this._subscribers.map( (s:Subject<any>) => s.next({'action': BasicActions.ADDRESS_ERROR}) );
+     this._subscribers.map( (s: Subject<any>) => s.next({'action': BasicActions.ADDRESS_ERROR}) );
    }
  }

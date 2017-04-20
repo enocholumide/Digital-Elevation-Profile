@@ -1,5 +1,5 @@
 
-/** 
+/**
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +21,16 @@
  * Note: This is an alpha release - the 'address' property will be deprecated in the future in favor of a more general Address class
  *
  * @author Jim Armstrong (www.algorithmist.net)
- * 
+ *
  * @version 1.0
  */
 
-export class TSMT$Location 
+export class TSMT$Location
 {
   // constants
-  protected static TO_MILES: number   = 0.621371;       // km to miles
-  protected static DEG_TO_RAD: number = 0.01745329251;  // PI/180.0;
-  protected static RADIUS_KM: number  = 6378.5;         // radius of earth in km.
+  protected static TO_MILES   = 0.621371;       // kilometers to miles
+  protected static DEG_TO_RAD = 0.01745329251;  // PI/180.0;
+  protected static RADIUS_KM  = 6378.5;         // radius of earth in kilometers.
 
   // public properties
   public id: string;           // an optional string identifier that may be associated with this location
@@ -40,9 +40,9 @@ export class TSMT$Location
   // internal
   protected _lat: number;      // latitude of this location in degrees (in range -90 to 90, south of equator is negative)
   protected _long: number;     // longitude of this location in degrees (in range -180 t0 180, west of prime meridian is negative)
-  protected _address: string;  // an optional, physical address associated with this location
+  public _address: string;  // an optional, physical address associated with this location
   protected _data: Object;     // optional data for this location as name-value pairs
-  
+
  /**
   * Construct a new Location
   *
@@ -66,7 +66,7 @@ export class TSMT$Location
  /**
   * Access the longitude of this location
   *
-  * @return number Longitude of current location in degress in the range [-180, 180]
+  * @return number Longitude of current location in degrees in the range [-180, 180]
   */
   public get longitude(): number
   {
@@ -93,7 +93,7 @@ export class TSMT$Location
   public getData(name: string): any
   {
     if (this._data.hasOwnProperty(name))
-      return this._data[name];
+      { return this._data[name]; }
   }
 
  /**
@@ -106,7 +106,7 @@ export class TSMT$Location
   public set latitude(value: number)
   {
     if (!isNaN(value) && isFinite(value) && value >= -90 && value <= 90)
-      this._lat = value;
+      { this._lat = value; }
   }
 
  /**
@@ -119,7 +119,7 @@ export class TSMT$Location
   public set longitude(value: number)
   {
     if (!isNaN(value) && isFinite(value) && value >= -180 && value <= 180)
-      this._long = value;
+      { this._long = value; }
   }
 
  /**
@@ -145,8 +145,8 @@ export class TSMT$Location
   */
   public setData(name: string, value: any)
   {
-    if (name != "" && name != " ")
-      this._data[name] = value;
+    if (name !== '' && name !== ' ')
+      { this._data[name] = value; }
   }
 
  /**
@@ -156,13 +156,13 @@ export class TSMT$Location
   */
   public clear(): void
   {
-    this.id       = "";
-    this.info     = "";
+    this.id       = '';
+    this.info     = '';
     this.isError  = false;
     this._lat     = 0;
     this._long    = 0;
 
-    this._address = "";
+    this._address = '';
     this._data    = new Object();
   }
 
@@ -181,15 +181,16 @@ export class TSMT$Location
     location.address   = this._address;
     location.latitude  = this.latitude;
     location.longitude = this.longitude;
+    location._data     = this._data;
 
-    let keys:Array<string> = Object.keys(this._data);
-    keys.map( (name: string): void => {location.setData(name, this._data[name])} );
+    let keys: Array<string> = Object.keys(this._data);
+    keys.map( (name: string): void => { location.setData(name, this._data[name]); } );
 
     return location;
   }
 
  /**
-  * Return the great-circle distance between this and another location specified by (lat, long)
+  * Return the great-circle distance between this and another location specified by (latitude, longitude)
   *
   * @param lat: number Latitude value in degrees that should be in the range [-90,90]
   *
@@ -198,23 +199,21 @@ export class TSMT$Location
   * @param toMiles: boolean True if the distance is returned in miles
   * @default false
   *
-  * @return number Great-circle distance between the current Location and the input (lat, long) in KM unless the toMiles parameter is set to true
+  * @return number Great-circle distance between the current Location and the input (latitude, longitude) in KM unless the toMiles parameter is set to true
   */
-  public gcd(lat: number, long: number, toMiles: boolean=false): number
+  public gcd(lat: number, long: number, toMiles= false): number
   {
-    let lat1: number  = this.latitude*TSMT$Location.DEG_TO_RAD;
-    let lat2: number  = lat*TSMT$Location.DEG_TO_RAD;
-    let long1: number = this.longitude*TSMT$Location.DEG_TO_RAD;
-    let long2: number = long*TSMT$Location.DEG_TO_RAD;
-    let dlat: number  = Math.abs(lat2 - lat1); 
+    let lat1: number  = this.latitude * TSMT$Location.DEG_TO_RAD;
+    let lat2: number  = lat * TSMT$Location.DEG_TO_RAD;
+    let long1: number = this.longitude * TSMT$Location.DEG_TO_RAD;
+    let long2: number = long * TSMT$Location.DEG_TO_RAD;
+    let dlat: number  = Math.abs(lat2 - lat1);
     let dlon: number  = Math.abs(long2 - long1);
-    let sLat: number  = Math.sin(dlat*0.5);
-    let sLong: number = Math.sin(dlon*0.5);
-    let a: number     = sLat*sLat + Math.cos(lat1)*Math.cos(lat2)*sLong*sLong;
-    let c: number     = 2*Math.asin(Math.min(1.0,Math.sqrt(a)));
-
-    let result: number = TSMT$Location.RADIUS_KM*c;  // result in km
-
-    return toMiles ? result*TSMT$Location.TO_MILES : result;
+    let sLat: number  = Math.sin(dlat * 0.5);
+    let sLong: number = Math.sin(dlon * 0.5);
+    let a: number     = sLat * sLat + Math.cos(lat1) * Math.cos(lat2) * sLong * sLong;
+    let c: number     = 2 * Math.asin(Math.min(1.0, Math.sqrt(a)));
+    let result: number = TSMT$Location.RADIUS_KM * c;  // result in km
+    return toMiles ? result * TSMT$Location.TO_MILES : result;
   }
 }

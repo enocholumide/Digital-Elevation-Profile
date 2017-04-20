@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 
 /**
- * A minmimal implementation of Flux-style dispatcher that serves as a reusable mediator between a generic component and a model instance that implements the 
+ * A minmimal implementation of Flux-style dispatcher that serves as a reusable mediator between a generic component and a model instance that implements the
  * IReduxModel interface.  Assign a model reference first and then add components as subscribers.
  *
  * @author Jim Armstrong (www.algorithmist.net)
@@ -50,8 +50,8 @@
    constructor()
    {
      // this is not strictly necessary if the dispatcher is used only via DI; it allows reusability outside the Angular inversion of control framework
-     if (FluxDispatcher._instance instanceof FluxDispatcher) 
-       return FluxDispatcher._instance;
+     if (FluxDispatcher._instance instanceof FluxDispatcher)
+       { return FluxDispatcher._instance; }
 
      this._subscribers = new Array<Subject<any>>();
 
@@ -74,7 +74,7 @@
        // model assignment is allowed to be lazy; i.e. subscribers may be set before the model reference
        if (this._subscribers.length > 0)
        {
-         this._subscribers.map( (subject: Subject<any>): void => {this._model.subscribe(subject)} );
+         this._subscribers.map( (subject: Subject<any>): void => { this._model.subscribe(subject); } );
          this._subscribers.length = 0;
        }
      }
@@ -83,8 +83,8 @@
   /**
    * Subscribe to updates
    *
-   * @param subject: Subject<any> This Subject will be subscribed to future updates from the asigned model 
-   * 
+   * @param subject: Subject<any> This Subject will be subscribed to future updates from the asigned model
+   *
    * @return nothing
    */
    public subscribe( subject: Subject<any> ): void
@@ -92,17 +92,17 @@
      if (subject)
      {
        if (this._model)
-         this._model.subscribe(subject);
+         { this._model.subscribe(subject); }
        else
-         this._subscribers.push(subject);  // defer subscription until model reference is assigned
+         { this._subscribers.push(subject); } // defer subscription until model reference is assigned
      }
    }
 
   /**
    * Unsubscribe to updates
    *
-   * @param subject: Subject<any> This Subject will be unsubscribed to future updates from the asigned model 
-   * 
+   * @param subject: Subject<any> This Subject will be unsubscribed to future updates from the asigned model
+   *
    * @return nothing
    */
    public unsubscribe( subject: Subject<any> ): void
@@ -120,4 +120,4 @@
        this._model.dispatchAction(action, payload);
      }
    }
- }
+}

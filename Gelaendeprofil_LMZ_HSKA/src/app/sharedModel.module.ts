@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
  * Shared Model module (necessary to enforce a singleton Model across eagerly and lazy-loaded routes
  *
  * @author Jim Armstrong (www.algorithmist.net)
- * 
+ *
  * @version 1.0
  */
 
@@ -31,9 +31,9 @@ import { LocationService } from './shared/services/location.service';
 import { Geocode         } from './shared/services/Geocode';
 
 @NgModule({})
-export class SharedModelModule 
+export class SharedModelModule
 {
-  static forRoot():ModuleWithProviders 
+  static forRoot(): ModuleWithProviders
   {
     return {
       ngModule: SharedModelModule,

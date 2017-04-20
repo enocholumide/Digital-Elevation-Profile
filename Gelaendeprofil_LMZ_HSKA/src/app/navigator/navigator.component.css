@@ -110,13 +110,7 @@ input::-webkit-input-placeholder {
 	color: #999;
 }
 
-
-.demo2 {
-	left:100px;
-}
-
 #demo-2 input[type=search] {
-	
 	width: 15px;
 	padding-left: 10px;
 	color: transparent;
@@ -126,7 +120,7 @@ input::-webkit-input-placeholder {
 	background-color: #fff;
 }
 #demo-2 input[type=search]:focus {
-	width: 650px;
+	width: 600px;
 	padding-left: 32px;
 	color: #000;
 	background-color: #fff;

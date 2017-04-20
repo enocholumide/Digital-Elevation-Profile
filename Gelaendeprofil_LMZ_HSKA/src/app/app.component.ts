@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,13 +22,10 @@ import {  Component
         , ChangeDetectorRef
        } from '@angular/core';
 
-
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-
-// leaflet map and loading components and basemaps component
+// leaflet map and loading components
 import { LeafletMap       } from './LeafletMap.component';
 import { LoadingComponent } from './loading/loading.component';
-import { BasemapsComponent  } from './basemaps/basemaps.component';
+import { Angular2FontAwesomeModule } from 'angular2-font-awesome/angular2-font-awesome';
 
 // base Flux component
 import { FluxComponent } from './shared/flux.component';
@@ -52,11 +49,11 @@ import { Subscription } from 'rxjs/Subscription';
 
   templateUrl: 'app.component.html',
 
-  styleUrls: ['app.component.css'],
+  styleUrls: ['app.component.css']
 })
 
 /**
- * Root component for Leaflet demo 
+ * Root component for Leaflet demo
  *
  * @author Jim Armstrong (www.algorithmist.net)
  *
@@ -64,14 +61,13 @@ import { Subscription } from 'rxjs/Subscription';
  */
  export class AppComponent extends FluxComponent implements OnInit, AfterViewInit
  {
-   protected _loading: boolean = true;    // true if content is being loaded
+   protected _loading = true;    // true if content is being loaded
 
    // access the leaflet map
    @ViewChild(LeafletMap) _leafletMap: LeafletMap;
-   
 
  /**
-   * Construct the main app component
+   * Construct the MAIN-APP component
    *
    * @return Nothing
    */
@@ -85,7 +81,7 @@ import { Subscription } from 'rxjs/Subscription';
    }
 
   /**
-   * Component lifecycle - on init
+   * Component life-cycle - on initialize
    *
    * @return nothing - reserved for future use
    */
@@ -95,9 +91,9 @@ import { Subscription } from 'rxjs/Subscription';
    }
 
   /**
-   * Component lifecycle - after view init
+   * Component life-cycle - after view initialize
    *
-   * @return nothing - dispatch action to request map paraams
+   * @return nothing - dispatch action to request map parameters
    */
    public ngAfterViewInit()
    {
@@ -119,7 +115,7 @@ import { Subscription } from 'rxjs/Subscription';
        case BasicActions.ADDRESS:
          location = <TSMT$Location> data['location'];
 
-        // this._leafletMap.toLocation(location.latitude, location.longitude, location.address);
+        // this._leafletMap.toLocation(location.latitude, location.longitude, location._address);
        break;
      }
    }
@@ -131,7 +127,7 @@ import { Subscription } from 'rxjs/Subscription';
      {
        this._loading = false;
 
-       // force change detection since we changed a bound property after the normal check cycle and outside anything that would trigger a 
+       // force change detection since we changed a bound property after the normal check cycle and outside anything that would trigger a
        // CD cycle - this will eliminate the error you get when running in dev mode and provide another example of how this process works.
        this._chgDetector.detectChanges();
      }

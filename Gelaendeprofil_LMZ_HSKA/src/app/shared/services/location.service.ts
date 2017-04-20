@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,14 +31,14 @@ import { TSMT$Location } from '../Location';
  */
 
 @Injectable()
-export class LocationService 
+export class LocationService
 {
  /**
   * Construct a new location service
   *
   * @param _http: Http Injected Http instance from the platform
   */
-  constructor(protected _http: Http) 
+  constructor(protected _http: Http)
   {
     // empty
   }
@@ -53,14 +53,14 @@ export class LocationService
   public getLocation(): Observable<TSMT$Location>
   {
     return this._http
-           .get("http://ipv4.myexternalip.com/json")
+           .get('http://ipv4.myexternalip.com/json')
            .map(res => res.json().ip)
-           .mergeMap(ip => this._http.get("http://freegeoip.net/json/" + ip))
+           .mergeMap(ip => this._http.get('http://freegeoip.net/json/' + ip))
            .map((res: Response) => res.json())
            .map(result => {
              let location = new TSMT$Location();
 
-             location.address   = result.city + ", " + result.region_code + " " + result.zip_code + ", " + result.country_code;
+             location.address   = result.city + ', ' + result.region_code + ' ' + result.zip_code + ', ' + result.country_code;
              location.latitude  = result.latitude;
              location.longitude = result.longitude;
 

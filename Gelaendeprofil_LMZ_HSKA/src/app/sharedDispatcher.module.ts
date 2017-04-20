@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright 2016 Jim Armstrong (www.algorithmist.net)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
  * Shared Dispatcher module (necessary to enforce a singleton FluxDispatcher across eagerly and lazy-loaded routes
  *
  * @author Jim Armstrong (www.algorithmist.net)
- * 
+ *
  * @version 1.0
  */
 
@@ -29,9 +29,9 @@ import { NgModule, ModuleWithProviders } from '@angular/core';
 import { FluxDispatcher } from './shared/FluxDispatcher';
 
 @NgModule({})
-export class SharedDispatcherModule 
+export class SharedDispatcherModule
 {
-  static forRoot():ModuleWithProviders 
+  static forRoot(): ModuleWithProviders
   {
     return {
       ngModule: SharedDispatcherModule,

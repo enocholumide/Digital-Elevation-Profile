@@ -1,4 +1,3 @@
-
 // Platform dependent imports
  import { Component
         , EventEmitter
@@ -24,7 +23,6 @@ import * as d3 from 'd3';
 
 
 import { MapNavComponent } from './navigator/navigator.component';
-import { BasemapsComponent  } from './basemaps/basemaps.component';
 
  @Component({
    selector: 'leaflet-map',
@@ -41,6 +39,7 @@ import { BasemapsComponent  } from './basemaps/basemaps.component';
 
    public coords = '...loading';
    public currentImage = './assets/icons/cartodb_positron.png';
+   public currentSelector:number;
    public providersImages = [ './assets/icons/cartodb_positron.png',
                               './assets/icons/esri_oceanbasemap.png',
                               './assets/icons/esri_worldterrain.png',
@@ -137,14 +136,7 @@ import { BasemapsComponent  } from './basemaps/basemaps.component';
 
      this.providers[0].addTo(this._map);
 
-
-     // add a single tile layer
-<<<<<<< HEAD
-     // L.tileLayer(tileData['URL'], { attribution: tileData['attribution'] }).addTo(this._map);
-
-=======
-     // L.tileLayer(tileData['url'], { attribution: tileData['attribution'] }).addTo(this._map);
-    
+  
      //Scale  //Anja
      L.control.scale({
        position: 'bottomright', 
@@ -152,7 +144,7 @@ import { BasemapsComponent  } from './basemaps/basemaps.component';
        imperial: false,
        }).addTo(this._map);
      
->>>>>>> origin/master
+
      // Leaflet installed typed plug-ins
       L.control.zoom({position: 'bottomright'}).addTo(this._map);
       L.control.locate({position: 'bottomright'}).addTo(this._map);
@@ -203,7 +195,24 @@ import { BasemapsComponent  } from './basemaps/basemaps.component';
                                         iconUrl: 'http://flyosity.com/images/_blogentries/networkicon/step4a.png',
                                         iconSize: [15, 15]
                                     });
+          // Add marker to leaflet map                       
+          const marker = L.marker([_lat, _lng],
+          {
+          icon: pointMarker,
+          title: _lat + ' ' + _lng }
+          )
+          .bindTooltip(_selectedAddress , {permanent: true, direction: 'top', offset: [0, -5], })
+          .addTo(this._map) 
+
       });
+
+      
+
+
+
+
+
+
 
    }
 
@@ -214,6 +223,7 @@ import { BasemapsComponent  } from './basemaps/basemaps.component';
       }
        this.providers[selector].addTo(this._map);
        this.currentImage = this.providersImages[selector];
+       this.currentSelector= selector;
 
     }
 

@@ -11,16 +11,13 @@
 
 .top-margin
 {
-  margin-top: 20px;
 }
 
 
 .header {
+	margin-left:300px;
 	position:absolute;
-	left:0;
-	top:45px;
-	height: 91px;
-	width: 100%;
+  	width: 100%;
 	margin-right: 10px;
 	overflow:visible;
 	z-index:2000;
@@ -32,7 +29,7 @@
 .leaflet-top  {
 	position: fixed;
 	top: 100px;
-	
+
 }
 
 .leaflet-top .leaflet-control {
