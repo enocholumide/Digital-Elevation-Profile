@@ -13,6 +13,8 @@ body { overflow: hidden;}
   margin-top: 10px;
 }
 
+
+
 a.main
 {
   text-decoration: none;
@@ -189,4 +191,51 @@ p.padded
 }
 
 
+.markersdetails {
+	text-align: left;
+	
+}
 
+.markersdetails .info{
+	font-weight: 200;
+	font-family: 'Open Sans';
+	padding: 12px 0;
+	box-sizing: border-box;
+	font-size: 13px;
+	color: darkgrey;
+	border-bottom: solid 1px #D8D8D8;
+	transition: all 0.4s ease-in-out;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+
+.markersdetails .info span {
+	text-decoration: none;
+	display: inline-block;
+}
+
+.markersdetails .info:hover{
+	color: black;
+	text-decoration: none;
+}
+
+.fa-times-circle:hover, .fa-plus-circle:hover, .fa-address-card:hover{
+	color: #f45342;
+	transition: all 0.4s ease-in-out;
+}
+
+.leaflet-popup-content-wrapper {
+	border-radius:0;
+	box-shadow: 0 0 35px rgba(0, 0, 0 0.5);
+}
+
+.leaflet-popup-content-wrapper .leaflet-popup-content {
+	padding:5px;
+	margin: 5px;
+}
+
+.leaflet-popup-tip-container {
+	color:blue;
+	display: none;
+}

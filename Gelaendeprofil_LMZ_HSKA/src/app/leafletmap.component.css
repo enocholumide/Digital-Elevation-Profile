@@ -24,10 +24,6 @@
 	margin:10px; 
 }
 
-.bottomContainer:hover{
-	box-shadow: 0 0 35px rgba(255, 255, 255, 0.9);
-}
-
 .layersToggle {
 	z-index: 5;
 	position: fixed;
@@ -45,6 +41,8 @@
 	transition: all 0.8s ease-in-out;
 	box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
 	filter: saturate(4);
+	background-size: cover; 
+    background-position: center;
 }
 
 .baseLayers {
@@ -82,6 +80,19 @@
 	background-color:  rgba(255, 255, 255, 0.5);
 	}
 
+.iconDescription {
+	position: absolute;
+	background-color: rgba(255, 255, 255, 0.9);
+	height:20%;
+	width: 100%;
+	margin:0;
+	padding:0;
+	text-align: center;
+	bottom:0;
+	border-bottom-right-radius: 3px;
+	border-bottom-left-radius: 3px;
+}
+
 .icon1 {
 	position: relative;
 	float: right;
@@ -90,7 +101,7 @@
 	min-height: 63px;
 	background-color: blue;
 	border-radius: 3px;
-	background-image: url('./assets/icons/cartodb_positron.png');
+	background-image: url('./assets/icons/satellitenbild.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -105,7 +116,7 @@
 	min-height: 63px;
 	background-color: green;
 	border-radius: 3px;
-	background-image: url('./assets/icons/esri_oceanbasemap.png');
+	background-image: url('./assets/icons/relief_maps4free.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -120,7 +131,7 @@
 	min-height: 63px;
 	background-color: red;
 	border-radius: 3px;
-	background-image: url('./assets/icons/esri_worldterrain.png');
+	background-image: url('./assets/icons/thunderforest_landscape.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -135,7 +146,7 @@
 	min-height: 63px;
 	background-color: orange;
 	border-radius: 3px;
-	background-image: url('./assets/icons/here_normalday.png');
+	background-image: url('./assets/icons/esri_world_topomap.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -160,12 +171,13 @@
 	margin-top:10px;
 	opacity:0.8;
 	filter: saturate(3);
+	transition: all 0.3s ease-in-out;
 }
 
 .icon1:hover, .icon2:hover, .icon3:hover, .icon4:hover , .icon5:hover {
     box-shadow: 0 0 35px rgba(255, 255, 255, 0.9);
 	border: 2px solid white;
-	transition: all .2s ease-in-out;
+	transition: all .3s ease-in-out;
 	border-radius: 9px;
 	opacity:1;
 	filter: saturate(4);
@@ -185,3 +197,8 @@
 .grow {
 	opacity:1;
 }
+
+.custom {
+	color:blue;
+}
+

@@ -1,7 +1,6 @@
 $(document).ready(function(){
 
   $(".baseLayers").addClass("hide_layers");
-
   $(".sidebar_menu").addClass("hide_menu");
   $(".toggle_menu").addClass("opacity_one");
 
@@ -27,8 +26,7 @@ $(document).ready(function(){
   // use setTimeout() to execute
   setTimeout(showMenuBarOnHover, 50) 
   */
-  	
-      
+  	   
 	  $(".layersToggle").click(function(){
 	    $(".baseLayers").removeClass("hide_layers");
       $(".baseLayers").addClass("hide_layers");
