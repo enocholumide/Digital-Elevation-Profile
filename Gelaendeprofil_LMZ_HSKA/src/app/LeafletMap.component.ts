@@ -12,7 +12,7 @@ import * as L from 'leaflet';
 import { Map } from 'leaflet';
 import 'leaflet.locatecontrol';
 import 'leaflet-geocoder-mapzen';
-// test git - fuad from Visual sudio code
+
 // D3
 import * as d3 from 'd3';
 
@@ -119,6 +119,9 @@ import * as d3 from 'd3';
      this._map.on('layerremove', () => {this.__onLayerRemoved(); } );
 
      this.providers[this.initMap].addTo(this._map);
+
+     // try
+     
      
      //Scale  //Anja
      L.control.scale({
