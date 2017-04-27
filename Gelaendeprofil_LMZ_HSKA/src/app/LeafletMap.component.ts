@@ -128,6 +128,7 @@ let drawControl = new L.Control.Draw({
     featureGroup: drawnItems
   }
 });
+this._map.addControl(drawControl);
 
      
      //Scale  //Anja
