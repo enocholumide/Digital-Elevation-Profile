@@ -28,7 +28,7 @@
     "@angular/platform-browser-dynamic": "^2.3.1",
     "@angular/router": "^3.3.1",
     "@types/leaflet-draw": "^0.4.3",
-    "@types/leaflet.locatecontrol": "^0.60.1",
+    "@types/leaflet.locatecontrol": "^0.60.2",
     "angular2-font-awesome": "^1.1.0",
     "angular2-polyfill": "0.0.32",
     "bootstrap": "^4.0.0-alpha.6",
