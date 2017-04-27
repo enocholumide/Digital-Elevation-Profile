@@ -12,7 +12,7 @@ import * as L from 'leaflet';
 import { Map } from 'leaflet';
 import 'leaflet.locatecontrol';
 import 'leaflet-geocoder-mapzen';
-
+// test git
 // D3
 import * as d3 from 'd3';
 
