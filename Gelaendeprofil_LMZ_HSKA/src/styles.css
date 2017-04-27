@@ -13,7 +13,9 @@ body { overflow: hidden;}
   margin-top: 10px;
 }
 
-
+.header{
+	min-height: 0;
+}
 
 a.main
 {
@@ -60,6 +62,21 @@ p.padded
 	position: fixed;
 	width: 250px;
 	margin-left:0px;
+	overflow: hidden;
+	height: 98vh;;
+	background-color: rgba(17, 17, 17, 0.9);
+	opacity: 0.9;
+	transition: all 0.4s ease-in-out;
+}
+
+
+
+.sidebarleft_menu{
+	z-index: 5;
+	position: fixed;
+	width: 250px;
+	right:0;
+	margin-right:0;
 	overflow: hidden;
 	height: 98vh;;
 	background-color: rgba(17, 17, 17, 0.9);
@@ -239,3 +256,21 @@ p.padded
 	color:blue;
 	display: none;
 }
+
+.leaflet-bottom.leaflet-left {
+	
+}
+
+.leaflet-draw-actions a {
+    background-color: #919187;
+    border-left: 1px solid #AAA;
+    color: #FFF;
+    font: 11px/19px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    line-height: 28px;
+    text-decoration: none;
+    padding-left: 10px;
+    padding-right: 10px;
+    height: 28px;
+}
+
+
