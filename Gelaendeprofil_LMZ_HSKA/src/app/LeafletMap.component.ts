@@ -121,6 +121,7 @@ import * as d3 from 'd3';
      this.providers[this.initMap].addTo(this._map);
 
      // try
+/*    
 let drawnItems:any = new L.FeatureGroup();
 this._map.addLayer(drawnItems);
 let drawControl = new L.Control.Draw({
@@ -128,7 +129,7 @@ let drawControl = new L.Control.Draw({
     featureGroup: drawnItems
   }
 });
-this._map.addControl(drawControl);
+this._map.addControl(drawControl);*/
 
      
      //Scale  //Anja
