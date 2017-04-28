@@ -29,13 +29,17 @@ import { NgModule      } from '@angular/core';
 import { FormsModule   } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule    } from '@angular/http';
+import { AlertModule } from 'ngx-bootstrap';
+import { PopoverModule } from 'ngx-bootstrap/popover';
 
 // main application component and supporting components
 import { AppComponent     } from './app.component';
 import { LeafletMap       } from './LeafletMap.component';
 import { LoadingComponent } from './loading/loading.component';
 import { MapNavComponent  } from './navigator/navigator.component';
-
+import { PopUPComponent  } from './popup/popup.component';
+import { SideBarComponent  } from './sidebar/sidebar.component';
+import { ProfileComponent  } from './profile/profile.component';
 
 // the shared model and dispatcher modules
 import { SharedModelModule      } from './sharedModel.module';
@@ -43,13 +47,21 @@ import { SharedDispatcherModule } from './sharedDispatcher.module';
 
 @NgModule({
   declarations: [
-    AppComponent, LeafletMap, LoadingComponent, MapNavComponent
+    AppComponent, 
+    LeafletMap, 
+    LoadingComponent, 
+    MapNavComponent, 
+    PopUPComponent, 
+    SideBarComponent,
+    ProfileComponent
   ],
 
   imports: [
     BrowserModule,
     HttpModule,
     FormsModule,
+    AlertModule.forRoot(),
+    PopoverModule.forRoot(),
     SharedModelModule.forRoot(),
     SharedDispatcherModule.forRoot()
   ],
