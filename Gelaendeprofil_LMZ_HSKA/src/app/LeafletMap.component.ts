@@ -28,12 +28,27 @@ import * as d3 from 'd3';
  })
 
  export class LeafletMap {
+    
+    // Child components
     @ViewChild(PopUPComponent) popupHTML: PopUPComponent;
     
-    // global 
+    // Outputs
+    @Output() layerAdded: EventEmitter<any> = new EventEmitter();
+    @Output() layerRemoved: EventEmitter<any> = new EventEmitter();
+
+    @Output() drawstart: EventEmitter<any> = new EventEmitter();
+    @Output() created: EventEmitter<any> = new EventEmitter();
+    @Output() editstart: EventEmitter<any> = new EventEmitter();
+    @Output() edited: EventEmitter<any> = new EventEmitter();
+    @Output() deleted: EventEmitter<any> = new EventEmitter();
+
+    constructor() {
+      // empty
+    }
+    
+    // BaseMap 
     providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];
     initMap = 4;
-
 
     // method called from app module, passed to the selector of the leaflet map, @important
     protected __onLayerAdded(): void {
@@ -46,17 +61,126 @@ import * as d3 from 'd3';
       this.layerRemoved.emit();
     }
 
-    // Outputs
-    @Output() layerAdded: EventEmitter<any> = new EventEmitter();
-    @Output() layerRemoved: EventEmitter<any> = new EventEmitter();
+    protected __onDrawStart(e): void {
+      this.drawnItems.clearLayers();
+      this.drawnMarkers.clearLayers();
 
-    constructor() {
-      // empty
+      this.drawstart.emit();
+    } 
+    
+    protected __onDrawCreated(e): void {
+      console.log('%cEvent: draw:created: ', 'color: grey');
+
+      let totalDistance = [];
+      let profileVertex = [];
+      let vertex:L.Marker;
+      let layer = e.layer;
+      
+      this.drawnItems.addLayer(layer);
+      
+      // Stored leaflet ID for the line, this will be called when Edited - important
+      this.lineLeafletID = 0;
+      this.lineLeafletID = layer._leaflet_id;
+      console.log('LineLeaflet - ID: ' + this.lineLeafletID);
+
+      // Empty stored points data on draw created and repopulate
+      this.storedPoints_LatLng = [];
+      for (let i = 0; i < layer._latlngs.length; i++) {
+          this.storedPoints_LatLng[i] = L.latLng (
+                                    layer._latlngs[i].lat, 
+                                    layer._latlngs[i].lng
+                                    );
+                                   
+          vertex = L.marker( layer._latlngs[i], 
+                      {
+                      icon: this.profileIcon,
+                      title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
+                      }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], });
+          
+          profileVertex[i] = vertex;
+          this.drawnMarkers.addLayer(profileVertex[i]);
+          
+      }
+
+      console.log('%cNew Created Points: ',  'color: red'); console.log(this.storedPoints_LatLng);
+      console.log('%cNew Created Feature Parameters:  ', 'color: blue');
+      
+      this._getAllVertix();
+      
+      // this.drawIntermediateVertix(); - Might be needed, but won't spend much time on this for now;
+    } // Draw Created Event
+
+    protected __onEditStart(e): void {
+        // this.__onupdateView('editstart');
+        this.editstart.emit();
     }
 
-    // leaflet map gloab variables, needed in the template and other components
-    positions = [];
-    public marker;
+    protected __onDrawEdited(e): void {
+      console.log('%cEvent: draw:edited ', 'color: grey');
+
+      this.__onupdateView('draw:edited');
+
+      let profileVertex = [];
+      let vertex:L.Marker;
+      let elayers:any;
+      elayers = e.layers; 
+      
+      // Empty stored points and re-populate
+      this.storedPoints_LatLng = [];
+      for (let i = 0; i < elayers._layers[this.lineLeafletID]._latlngs.length; i++) {
+          this.storedPoints_LatLng[i] = L.latLng (
+                                          elayers._layers[this.lineLeafletID]._latlngs[i].lat, 
+                                          elayers._layers[this.lineLeafletID]._latlngs[i].lng
+                                    );
+          // Refuse to draw markers when the nodes are more than 6 - the maximum                           
+          if (i <= 5) {  
+          vertex = L.marker( elayers._layers[this.lineLeafletID]._latlngs[i], 
+                      {
+                      icon: this.profileIcon,
+                      title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
+                      }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
+          
+          profileVertex[i] = vertex;
+          this.drawnMarkers.addLayer(profileVertex[i]);
+        }
+        
+        // At the end of the loop, check if the stored items are more than 6, the slice the stored points
+        if (i === (elayers._layers[this.lineLeafletID]._latlngs.length - 1)) {
+            if ( this.storedPoints_LatLng.length > 5) {
+              console.log('%c NOTE: Edited Item have been sliced, only first 6 nodes retained. ', 'background: #000000; color: #ffffff');
+              this.storedPoints_LatLng = this.storedPoints_LatLng.slice(0, 6)
+            }
+        }
+      }
+
+      console.log('%cEdited Points: ', 'color: red'); console.log( this.storedPoints_LatLng );
+      console.log('%cEDITED Feature Parameters: ', 'color: blue');
+
+      this._getAllVertix();
+
+      this.edited.emit();
+    }
+
+    protected __onDrawDeleted(e): void {
+          this.drawnMarkers.clearLayers();
+
+          this.deleted.emit();    
+    }
+
+    // Elevation profile variables
+    public lineLeafletID:number;
+    public storedPoints_LatLng = [];
+    public featureVertices = [];
+    public drawnItems:L.FeatureGroup;
+    public drawnMarkers:L.FeatureGroup;
+    public profileIcon:L.Icon;
+    public vertexIcon:L.Icon;
+
+    // Elevation request parameters, uses Google API (for now)
+    public REQUEST:string;
+    public GOOGLE_API_KEY:string='AIzaSyCsc5MNOSnljA4itLgsykY-686fFBn3bag';
+
+    // Leaflet Map and base maps parameters
     public _map: Map;
     public coords = '...loading';
     public currentSelector:number;
@@ -66,8 +190,7 @@ import * as d3 from 'd3';
                                 './assets/icons/thunderforest_landscape.png',
                                 './assets/icons/esri_world_topomap.png',
                                 './assets/icons/openstreetmap_de.png',
-                              ];
-                            
+                              ];                       
     public currentImage = this.providersImages[this.initMap];
     public providers = [
               
@@ -130,53 +253,62 @@ import * as d3 from 'd3';
 
     public initialize(params: Object, tileData: Object): void {
 
-      // initialize leaflet map and center at karlsruhe
+     // initialize leaflet map and center at karlsruhe
       this._map =  L.map('leaflet-map-component',
                         { center: [49.00, 8.40], 
                           zoom: 10,
                           zoomControl: false,
                           //drawControl : true ,
                         });
-      // events
-      this._map.on('layeradd'   , () => {this.__onLayerAdded(); } );
-      this._map.on('layerremove', () => {this.__onLayerRemoved(); } );
-
+      
       // add tile layer to Map
       this.providers[this.initMap].addTo(this._map);
 
-      // initialize profile markers
-      var drawnItems = new L.FeatureGroup(drawnItems);
-      this._map.addLayer(drawnItems);
-      var drawControl = new L.Control.Draw({
-          position:'bottomleft',
-          draw: {polygon:false, rectangle:false, circle:false, polyline:true, marker:false},
-          edit: {
-              featureGroup: drawnItems,
-          }
+      // All events captured
+      this._map.on('layeradd'   , () => {this.__onLayerAdded(); } );
+      this._map.on('layerremove', () => {this.__onLayerRemoved(); } );
+      
+      this._map.on('draw:drawstart', this.__onDrawStart, this);
+      this._map.on('draw:created', this.__onDrawCreated, this);
+      this._map.on('draw:editstart', this.__onEditStart, this);
+      this._map.on('draw:edited', this.__onDrawEdited, this);
+      this._map.on('draw:deleted', this.__onDrawDeleted, this);
+
+      this._map.on('mousemove', this._onMouseMove, this);
+
+      let polyline:any;
+      let markers:any;
+      this.drawnItems = new L.FeatureGroup(polyline);
+      this.drawnMarkers = new L.FeatureGroup(markers);
+      this.profileIcon = L.icon({
+            iconUrl: '../assets/markers/profile.png',
+            iconSize: [15, 15]
       });
-
-      this._map.addControl(drawControl);
-
-      this._map.on('draw:created', function (e) {
-        var layer = e.layer; // ignore for now
-        console.log(layer);
-        console.log(layer._latlngs.length);
-        
-        for (let i = 0; i < layer._latlngs.length; i++) {
-          console.log(layer._latlngs[i]);
-        }
-            drawnItems.addLayer(layer);
+      this.vertexIcon = L.icon({
+            iconUrl: '../assets/markers/vertex.png',
+            iconSize: [20, 20]
       });
-
-    ; 
-
+      
       // Leaflet plugins; the order is required
       L.control.scale({ position: 'bottomright', metric: true, imperial: false,}).addTo(this._map); //Scale  //Anja
       L.control.zoom({position: 'bottomright'}).addTo(this._map);
       L.control.locate({position: 'bottomright'}).addTo(this._map);
-      
-      // listener for mouse position
-      this._map.on('mousemove', this._onMouseMove, this);
+
+      // Add leaflet Draw
+      var drawControl = new L.Control.Draw({
+          position:'bottomleft',
+          draw: {polygon:false, rectangle:false, circle:false, polyline:true, marker:false},
+          edit: {
+              featureGroup: this.drawnItems, // important for the editor options to be active and finsih draw
+          }
+      });
+      // add draw control to map
+      this._map.addControl(drawControl);
+
+      // Add all layers
+      this._map.addLayer(this.drawnItems);
+      this._map.addLayer(this.drawnMarkers);
+      this._map.addLayer(this.drawnMarkers);
 
       // proceed to method that handles gelocation after finished iniializing map
       this._searchedLocation ();
@@ -190,7 +322,7 @@ import * as d3 from 'd3';
 
    // geloocator method
    public _searchedLocation (): void {
-
+     
     // initialize MAPZEN Geocoder
     let geocoder = L.control.geocoder('mapzen-u9qqNQi',
                         { position: 'bottomright',
@@ -236,10 +368,11 @@ import * as d3 from 'd3';
                 .bindPopup(customPopup, { offset: [80, 175], })
                 .addTo(this._map)
                 
+                console.log( 'searched markers: ');
                 console.log(this.marker);
 
                 this.marker.on('click', function(){
-                  console.log('yay'); // test, note @Anja
+                console.log('yay'); // test, note @Anja
                 })
                 /** // not working yet :(
                 document.getElementById('a').onclick = function(e) {
@@ -249,9 +382,7 @@ import * as d3 from 'd3';
                   }  
                 }
 
-                */
-                 
-                             
+                */               
             }); // geocoder
         } // _searchedLocation
 
@@ -272,11 +403,11 @@ import * as d3 from 'd3';
     } // _changeBasemapLayer
  
 
-    // method for updating user mouse postion 
+    // Listner for updating user mouse position 
     public _onMouseMove(e): string {
       const lng = e.latlng.lng;
       const lat = e.latlng.lat;
-      this.coords = lng + '  ' + lat ;
+      this.coords = lat + '  ' + lng ;
       return this.coords; // coords variable was interpolated at the input element in the html template
     } // _onMouseMove
 
@@ -285,4 +416,270 @@ import * as d3 from 'd3';
       console.log('test - side bar component was here');
     }
 
-}
+    public _getDistance(point1:L.LatLng, point2:L.LatLng):number {
+      /**
+       * Returns the distance (in meters)  between two points calculated using the Haversine formula
+       * This is the same os the leaflet 'distance to' method
+       * Ref 1: http://leafletjs.com/reference.html#latlng - LEAFLET DOCUMENTATION
+       * Ref 2: http://www.movable-type.co.uk/scripts/latlong.html - by Chris Veness
+       * Ref 3: https://github.com/soichih/node-sgeo - Soichi Hayashi", "email": "soichih@gmail.com
+       * 
+       * For Ref 2, the page presents a variety of calculations for lati­tude/longi­tude points, 
+       * with the formulæ and js code fragments for implementing them.
+       * 
+       * Thus, we will assume the earth is spherical, for now (ignoring ellipsoidal effects) 
+       * – which is more accurate, well, we may not need so much accurracy for now.
+       * Perhaps, this can be an improvement moving forward; 
+       * Especially if the user wants elevation profile betwen Karlsruhe and Moscow :-)
+       * 
+       * For longer distances, this is purely a SECOND GEODETIC MAJOR TASK problem
+       * Perhaps, this can be an improvement moving forward. :-) this.more_work :-) 
+       */       
+      const RAD = 0.01745329252;
+      const DEG = 57.295779513;
+
+        var R = 6371e3; // metres
+        var φ1 = point1.lat * RAD;
+        var φ2 = point2.lat * RAD;
+        var Δφ = (point2.lat-point1.lat) * RAD;
+        var Δλ = (point2.lng-point1.lng) * RAD;
+
+        var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        var d = R * c;
+
+        return d;
+    } // function _getDistance
+
+
+    public _getAllVertix() {
+
+      /**
+      * The distrubtion of the vertex based on the distance have to be discussed
+      * This is just a test scenerio
+      */
+
+      const MAXVERTIX = 200;
+
+      let totalLength = 0;          // 1.
+      let partLength = [];          // 2.
+      let totalVertix = 0;          // 3.
+      let partVertixRatio = [];     // 4.
+      let partVertixNumber = [];    // 5.
+      let partVertixCoords = [];
+      let featureVertixCoords = []; // 6.
+
+      for (let i = 0; i < (this.storedPoints_LatLng.length - 1); i++) {
+        // 1.
+        totalLength += this._getDistance(
+                                    this.storedPoints_LatLng[i],
+                                    this.storedPoints_LatLng[i+1]);
+        // 2.
+        partLength[i] = this._getDistance(
+                                    this.storedPoints_LatLng[i],
+                                    this.storedPoints_LatLng[i+1]);                        
+                                   
+        if (i === (this.storedPoints_LatLng.length - 2) ) {
+          // 3. 
+          console.log('Total Length of feature: ' + totalLength);
+          if (totalLength < 1000) {
+              totalVertix = MAXVERTIX;
+              console.log('Total_Vertix: ' + (totalVertix));    
+          } else if (totalLength < 2000) {
+              totalVertix = Math.round(MAXVERTIX * 0.8);
+              console.log('Total_Vertix: ' + (totalVertix));     
+          } else if (totalLength < 4000) {
+              totalVertix = Math.round(MAXVERTIX * 0.6);
+              console.log('Total_Vertix: ' + (totalVertix));           
+          } else if (totalLength < 5000) {
+              totalVertix = Math.round(MAXVERTIX * 0.4);
+              console.log('Total_Vertix: ' + (totalVertix));    
+          }
+          else {
+              totalVertix = MAXVERTIX * 0.2;
+              console.log('Total_Vertix: ' + (totalVertix));    
+          }
+          // 4.
+          for (let j = 0; j < (this.storedPoints_LatLng.length - 1); j++ ){
+            partVertixRatio[j] = partLength[j] / totalLength;
+            // 5.
+            if (j === (this.storedPoints_LatLng.length - 2)) {
+              console.log('Total number of Paths: ' + partLength.length);
+              console.log('Parts Vertix Ratios: ' + partVertixRatio);    
+              for (let k = 0; k < (this.storedPoints_LatLng.length - 1); k++ ) {
+                  partVertixNumber [k] = Math.round(totalVertix * partVertixRatio[k]);
+              } console.log('Parts Vertix Numbers: ' + partVertixNumber);    
+            } // 5. @j
+          } // 4. @j
+        } // 3. @i                               
+      } // 1, 2 @i
+
+
+      // Empty all incoming arrays
+      this.featureVertices = [];
+      let tempArray = [];
+
+      // Push the first lat and lng
+      this.featureVertices.push(this.storedPoints_LatLng[0]);
+
+      // Push all parts lat and lng
+      for (let i = 0; i < partLength.length; i++ ) {
+        tempArray = [];
+
+        // Here, get the lat and lng for a line path and ...
+        tempArray = this._getfractionPoints(this.storedPoints_LatLng[i], this.storedPoints_LatLng[i+1], partVertixNumber[i]);
+        for (let j = 0; j < tempArray.length; j++ ) {
+            this.featureVertices.push(tempArray[j]);
+        }
+        // ... push the next node lat and lng
+        this.featureVertices.push(this.storedPoints_LatLng[i+1]);
+      }
+
+      // Continue in the loop and finish all
+
+      console.log('Node Coords'); console.log(this.storedPoints_LatLng);
+      console.log('Total Vertices'); console.log(this.featureVertices);
+
+      // Proceed to get elevation for all points
+      this.getElevation();
+
+    } // Get All Vertix method
+
+  public _getfractionPoints(point1:L.LatLng, point2:L.LatLng, allvertexNos:number ):number[] {
+      
+      /** An intermediate point at any fraction along the great circle path between two points can also be calculated
+       * Code adapted from Chris Veness at http://www.movable-type.co.uk/scripts/latlong.html
+       * Check Intermediate point section.
+       */
+      
+      const RAD = 0.01745329252;
+      const DEG = 57.295779513;
+
+      let n = allvertexNos;
+      let df = n - 1;
+      let rep = df - 1;
+      let startfraction = 1 / df;
+      let end = startfraction * rep;
+      let partcoords = [];
+
+      let counter = 0;
+      let fraction = startfraction;
+
+      for (let i = 0; i < rep; i++) {
+        counter++;
+        fraction = startfraction * counter;
+
+      let φ1 = point1.lat * RAD, λ1 = point1.lng * RAD;
+      let φ2 = point2.lat * RAD, λ2 = point2.lng * RAD;
+
+      let sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1), sinλ1 = Math.sin(λ1), cosλ1 = Math.cos(λ1);
+      let sinφ2 = Math.sin(φ2), cosφ2 = Math.cos(φ2), sinλ2 = Math.sin(λ2), cosλ2 = Math.cos(λ2);
+
+      // distance between points
+      let Δφ = φ2 - φ1;
+      let Δλ = λ2 - λ1;
+      let a = Math.sin(Δφ/2) * Math.sin(Δφ/2)
+          + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      let δ = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      let A = Math.sin((1-fraction)*δ) / Math.sin(δ);
+      let B = Math.sin(fraction*δ) / Math.sin(δ);
+
+      let x = A * cosφ1 * cosλ1 + B * cosφ2 * cosλ2;
+      let y = A * cosφ1 * sinλ1 + B * cosφ2 * sinλ2;
+      let z = A * sinφ1 + B * sinφ2;
+
+      let φ3 = Math.atan2(z, Math.sqrt(x*x + y*y));
+      let λ3 = Math.atan2(y, x);
+
+      let fractionPoint = new L.LatLng(φ3 * DEG, ((λ3 * DEG)+540)%360-180); // normalise lon to −180..+180°
+
+      partcoords[i] = new L.LatLng(φ3 * DEG, ((λ3 * DEG)+540)%360-180); // normalise lon to −180..+180°
+      
+      }  
+
+      return partcoords;
+      
+    }
+  
+    public drawIntermediateVertix():void {
+        /**
+         * Code Not yet concluded, might not be need.
+         */
+        let smallVertex = [];
+        let vertexInt:L.Marker;
+        
+        for (let i = 0; i < this.featureVertices.length; i++) {
+
+            if (this.featureVertices[i] === this.storedPoints_LatLng[i]) {
+              console.log('Equals! ');
+            } else {
+              vertexInt = L.marker( this.featureVertices[i], {icon: this.vertexIcon});
+              smallVertex[i] = vertexInt;
+              this.drawnMarkers.addLayer(smallVertex[i]);
+            }
+      }
+    }
+
+    public getElevation(): void {
+      /**
+       * Elevation service from Google.
+       * We can also use ESRI API
+       * For now, this is just a test.
+       * For any changes, just change the http address down below and maybe your API Key, 
+       * All should work.
+       * If not, take a coffee. :-)
+       * 
+       * I have commented the results, it seems there is a limit or something.
+       * Still in developing mode.
+       * To view the results, just uncomment the console log.
+       */
+      let address:string = 'https://maps.googleapis.com/maps/api/elevation/json?locations=';
+      let separator:string = '|';
+      let comma = ',';
+      let data = "";
+
+      for (let i = 0; i < this.featureVertices.length; i++) {
+
+          if (i === 0 ) {
+            data += address;
+          }
+          
+          data += (String(this.featureVertices[i].lat)) + comma + (String(this.featureVertices[i].lng)) + separator;
+
+          if (i === this.featureVertices.length -1 ) {
+              data += (String(this.featureVertices[i].lat)) + comma + (String(this.featureVertices[i].lng)) + '&key=' + this.GOOGLE_API_KEY;
+          }
+      }
+
+      let elevation = data;
+      console.log('%cRESULTS: ', 'color: green');
+      //console.log(elevation);
+    }
+
+    public getMarkerLabel(i:number):string{
+
+      /**
+       * Moving forward - this method has to be improved to listen to changes on the label marker 
+       */
+        let label = ['A', 'B', 'C', 'D', 'E', 'F'];
+        return label[i];
+    } // getMarkerLabel
+
+    public __onupdateView(signal:string) { // Still needs work
+
+      if (signal = 'editstart' ) {
+          this.drawnMarkers.clearLayers();
+      } else if (signal = 'draw:edited') {
+          this.drawnMarkers.clearLayers();
+      }
+      
+      else if (signal = 'drawstart' ) {
+        this.drawnItems.clearLayers();
+        this.drawnMarkers.clearLayers();
+      }
+    } // __onupdateView
+    
+} // Leaflet map class
