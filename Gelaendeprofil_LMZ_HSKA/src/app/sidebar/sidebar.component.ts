@@ -23,6 +23,6 @@ export class SideBarComponent {
         var pointy = 49;
 
 
-        this.profileFunctions._drawStart(9, 49);
+        // this.profileFunctions._drawStart(9, 49);
     }
 }

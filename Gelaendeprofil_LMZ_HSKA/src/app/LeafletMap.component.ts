@@ -111,7 +111,8 @@ import * as d3 from 'd3';
     } // Draw Created Event
 
     protected __onEditStart(e): void {
-        // this.__onupdateView('editstart');
+		
+		this.drawnMarkers.clearLayers();
         this.editstart.emit();
     }
 

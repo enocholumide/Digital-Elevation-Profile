@@ -43,7 +43,7 @@ p.padded
 .toggle_menu{
 	position: fixed;
 	padding: 15px 20px 15px 15px;
-	margin-top: 150px;
+	margin-top: 10px;
 	color: white;
 	cursor: pointer;
 	background-color: #648B79;
@@ -60,10 +60,9 @@ p.padded
 .sidebar_menu{
 	z-index: 5;
 	position: fixed;
-	width: 250px;
-	margin-left:0px;
+	width: 50px;
 	overflow: hidden;
-	height: 98vh;;
+	height: 100%;;
 	background-color: rgba(17, 17, 17, 0.9);
 	opacity: 0.9;
 	transition: all 0.4s ease-in-out;
