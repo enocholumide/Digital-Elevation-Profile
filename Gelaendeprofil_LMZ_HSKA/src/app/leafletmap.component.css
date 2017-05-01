@@ -101,7 +101,7 @@
 	min-height: 63px;
 	background-color: blue;
 	border-radius: 3px;
-	background-image: url('./assets/icons/satellitenbild.png');
+	background-image: url('../assets/icons/satellitenbild.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -116,7 +116,7 @@
 	min-height: 63px;
 	background-color: green;
 	border-radius: 3px;
-	background-image: url('./assets/icons/relief_maps4free.png');
+	background-image: url('../assets/icons/relief_maps4free.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -131,7 +131,7 @@
 	min-height: 63px;
 	background-color: red;
 	border-radius: 3px;
-	background-image: url('./assets/icons/thunderforest_landscape.png');
+	background-image: url('../assets/icons/thunderforest_landscape.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -146,7 +146,7 @@
 	min-height: 63px;
 	background-color: orange;
 	border-radius: 3px;
-	background-image: url('./assets/icons/esri_world_topomap.png');
+	background-image: url('../assets/icons/esri_world_topomap.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;
@@ -160,7 +160,7 @@
 	min-height: 63px;
 	background-color: white;
 	border-radius: 3px;
-	background-image: url('./assets/icons/openstreetmap_de.png');
+	background-image: url('../assets/icons/openstreetmap_de.png');
 	background-size: cover; 
     background-position: center;
     cursor: pointer;

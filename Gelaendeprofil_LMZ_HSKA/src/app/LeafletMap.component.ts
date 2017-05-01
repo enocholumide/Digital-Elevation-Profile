@@ -7,9 +7,14 @@
         , ViewChild
         , Renderer
         } from '@angular/core';
-
+import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { PopoverModule } from 'ngx-bootstrap/popover';
 import { PopUPComponent  } from './popup/popup.component';
+import {Observable} from 'rxjs/Rx';
+
+// Import RxJs required methods
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
 
 // Leaflet plug-ins
 import * as L from 'leaflet';
@@ -17,6 +22,10 @@ import { Map } from 'leaflet';
 import 'leaflet.locatecontrol';
 import 'leaflet-geocoder-mapzen';
 import 'leaflet-draw';
+import 'leaflet-overpass-layer';
+
+// Turf
+import * as turf from 'turf';
 
 // D3
 import * as d3 from 'd3';
@@ -42,10 +51,11 @@ import * as d3 from 'd3';
     @Output() edited: EventEmitter<any> = new EventEmitter();
     @Output() deleted: EventEmitter<any> = new EventEmitter();
 
-    constructor() {
+    constructor( private _http: Http) {
       // empty
+
     }
-    
+
     // BaseMap 
     providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];
     initMap = 4;
@@ -145,7 +155,7 @@ import * as d3 from 'd3';
           this.drawnMarkers.addLayer(profileVertex[i]);
         }
         
-        // At the end of the loop, check if the stored items are more than 6, the slice the stored points
+        // At the end of the loop, check if the stored items are more than 6, then slice the stored points
         if (i === (elayers._layers[this.lineLeafletID]._latlngs.length - 1)) {
             if ( this.storedPoints_LatLng.length > 5) {
               console.log('%c NOTE: Edited Item have been sliced, only first 6 nodes retained. ', 'background: #000000; color: #ffffff');
@@ -175,11 +185,16 @@ import * as d3 from 'd3';
     public drawnItems:L.FeatureGroup;
     public drawnMarkers:L.FeatureGroup;
     public profileIcon:L.Icon;
+    public peakIcon:L.Icon;
     public vertexIcon:L.Icon;
 
     // Elevation request parameters, uses Google API (for now)
     public REQUEST:string;
     public GOOGLE_API_KEY:string='AIzaSyCsc5MNOSnljA4itLgsykY-686fFBn3bag';
+    public elevation;
+    // Points of interest; uses OverPASS API
+    public POINTS_OF_INTEREST;
+    public PEAKS: {coord: L.LatLng, name: string }[] = [];
 
     // Leaflet Map and base maps parameters
     public _map: Map;
@@ -254,15 +269,14 @@ import * as d3 from 'd3';
 
     public initialize(params: Object, tileData: Object): void {
 
-     // initialize leaflet map and center at karlsruhe
+     // Initialize leaflet map and center at karlsruhe
       this._map =  L.map('leaflet-map-component',
                         { center: [49.00, 8.40], 
-                          zoom: 10,
+                          zoom: 12,
                           zoomControl: false,
-                          //drawControl : true ,
                         });
       
-      // add tile layer to Map
+      // Add tile layer to Map
       this.providers[this.initMap].addTo(this._map);
 
       // All events captured
@@ -277,6 +291,7 @@ import * as d3 from 'd3';
 
       this._map.on('mousemove', this._onMouseMove, this);
 
+      // Drawing Variables, Markers and Icons
       let polyline:any;
       let markers:any;
       this.drawnItems = new L.FeatureGroup(polyline);
@@ -285,17 +300,24 @@ import * as d3 from 'd3';
             iconUrl: '../assets/markers/profile.png',
             iconSize: [15, 15]
       });
+
       this.vertexIcon = L.icon({
             iconUrl: '../assets/markers/vertex.png',
             iconSize: [20, 20]
       });
+
+      this.peakIcon = L.icon({
+            iconUrl: '../assets/markers/peak.png',
+            iconSize: [25, 25],
+      });
+
       
       // Leaflet plugins; the order is required
       L.control.scale({ position: 'bottomright', metric: true, imperial: false,}).addTo(this._map); //Scale  //Anja
       L.control.zoom({position: 'bottomright'}).addTo(this._map);
       L.control.locate({position: 'bottomright'}).addTo(this._map);
 
-      // Add leaflet Draw
+      // Add Leaflet Draw
       var drawControl = new L.Control.Draw({
           position:'bottomleft',
           draw: {polygon:false, rectangle:false, circle:false, polyline:true, marker:false},
@@ -303,15 +325,16 @@ import * as d3 from 'd3';
               featureGroup: this.drawnItems, // important for the editor options to be active and finsih draw
           }
       });
-      // add draw control to map
+
+      // Add draw control to map
       this._map.addControl(drawControl);
 
       // Add all layers
       this._map.addLayer(this.drawnItems);
       this._map.addLayer(this.drawnMarkers);
-      this._map.addLayer(this.drawnMarkers);
+      //TODO: Create Separate layer for peaks shown on the map
 
-      // proceed to method that handles gelocation after finished iniializing map
+      // Proceed to method that handles gelocation after finished iniializing map
       this._searchedLocation ();
 
    } // initialize
@@ -655,9 +678,11 @@ import * as d3 from 'd3';
           }
       }
 
-      let elevation = data;
-      console.log('%cRESULTS: ', 'color: green');
-      //console.log(elevation);
+      
+      console.log('%cElevation Results: ', 'color: green');
+      //console.log(data);
+
+      this.getNearestPoints();
     }
 
     public getMarkerLabel(i:number):string{
@@ -682,5 +707,212 @@ import * as d3 from 'd3';
         this.drawnMarkers.clearLayers();
       }
     } // __onupdateView
+
+
+    public getNearestPoints(){
+        console.log('%cComputing nearest points: ', 'color: blue');
+        let bufferDistance = 5000; //Meters
+	
+		
+        let multiLine = turf.lineString([this.storedPoints_LatLng]);
+        let randomPoint:L.Marker;
+        let bufferedPolyline:L.Polyline;
+        let randomPointMarkers = [];
+        let randomPlaces = [];
+        let buffered: GeoJSONFeature<any>;
+
+                // Get bounding box from points
+        let allLat = [];
+        let allLng = [];
+
+        for (let i = 0; i < this.storedPoints_LatLng.length; i++) {
+          allLat.push(this.storedPoints_LatLng[i].lat);
+          allLng.push(this.storedPoints_LatLng[i].lng);
+        }
+        
+        let topRight = L.latLng(Math.max.apply(Math, allLat), Math.max.apply(Math, allLng)); 
+        let bottomLeft = L.latLng(Math.min.apply(Math, allLat), Math.min.apply(Math, allLng));
+
+        console.log('Bounds: Top Right: '); console.log(topRight);
+        console.log('Bounds: Bottom Left: '); console.log(bottomLeft);
+
+
+            if (this.storedPoints_LatLng.length === 2) {
+              buffered = turf.buffer(
+                            {
+                              "type": "Feature", "geometry": { "type": "LineString",
+                                "coordinates": [
+                                    [ this.storedPoints_LatLng[0].lat, this.storedPoints_LatLng[0].lng],
+                                    [ this.storedPoints_LatLng[1].lat, this.storedPoints_LatLng[1].lng],
+                                  ],
+                              },"properties": { "name": "Dinagat Islands" }
+                            }, bufferDistance, 'meters');} // if
+            if (this.storedPoints_LatLng.length === 3) {
+                buffered = turf.buffer(
+                            {
+                              "type": "Feature", "geometry": { "type": "LineString",
+                                "coordinates": [
+                                    [ this.storedPoints_LatLng[0].lat, this.storedPoints_LatLng[0].lng],
+                                    [ this.storedPoints_LatLng[1].lat, this.storedPoints_LatLng[1].lng],
+                                    [ this.storedPoints_LatLng[2].lat, this.storedPoints_LatLng[2].lng],
+                                  ],
+                              },"properties": { "name": "Dinagat Islands" }
+                            }, bufferDistance, "meters");} // if
+            if (this.storedPoints_LatLng.length === 4) {
+                buffered = turf.buffer(
+                            {
+                              "type": "Feature", "geometry": { "type": "LineString",
+                                "coordinates": [
+                                    [ this.storedPoints_LatLng[0].lat, this.storedPoints_LatLng[0].lng],
+                                    [ this.storedPoints_LatLng[1].lat, this.storedPoints_LatLng[1].lng],
+                                    [ this.storedPoints_LatLng[2].lat, this.storedPoints_LatLng[2].lng],
+                                    [ this.storedPoints_LatLng[3].lat, this.storedPoints_LatLng[3].lng],
+                                  ],
+                              },"properties": { "name": "Dinagat Islands" }
+                            }, bufferDistance, "meters");} // if
+            if (this.storedPoints_LatLng.length === 5) {
+                buffered = turf.buffer(
+                            {
+                              "type": "Feature", "geometry": { "type": "LineString",
+                                "coordinates": [
+                                    [ this.storedPoints_LatLng[0].lat, this.storedPoints_LatLng[0].lng],
+                                    [ this.storedPoints_LatLng[1].lat, this.storedPoints_LatLng[1].lng],
+                                    [ this.storedPoints_LatLng[2].lat, this.storedPoints_LatLng[2].lng],
+                                    [ this.storedPoints_LatLng[3].lat, this.storedPoints_LatLng[3].lng],
+                                    [ this.storedPoints_LatLng[4].lat, this.storedPoints_LatLng[4].lng],
+                                  ],
+                              },"properties": { "name": "Dinagat Islands" }
+                            }, bufferDistance, "meters");} // if
+
+            if (this.storedPoints_LatLng.length === 6) {
+                buffered = turf.buffer(
+                          {
+                            "type": "Feature", "geometry": { "type": "LineString",
+                              "coordinates": [
+                                  [ this.storedPoints_LatLng[0].lat, this.storedPoints_LatLng[0].lng],
+                                  [ this.storedPoints_LatLng[1].lat, this.storedPoints_LatLng[1].lng],
+                                  [ this.storedPoints_LatLng[2].lat, this.storedPoints_LatLng[2].lng],
+                                  [ this.storedPoints_LatLng[3].lat, this.storedPoints_LatLng[3].lng],
+                                  [ this.storedPoints_LatLng[4].lat, this.storedPoints_LatLng[4].lng],
+                                  [ this.storedPoints_LatLng[5].lat, this.storedPoints_LatLng[5].lng],
+                                ],
+                            },"properties": { "name": "Dinagat Islands" }
+                          }, bufferDistance, "meters");} // if
+
+
+        console.log('Buffered Radius polygon: '); console.log(buffered);                   
+
+        let bufferPolygon:L.LatLng[] = [];
+        let drawnBounds:L.LatLngBounds = L.latLngBounds(bottomLeft, topRight);
+        for (let i = 0; i < buffered.geometry.coordinates[0].length - 1; i++) {
+            randomPoint = L.marker([buffered.geometry.coordinates[0][i][0], buffered.geometry.coordinates[0][i][1]], {icon: this.profileIcon});       
+            randomPlaces[i] = randomPoint;
+            //let bordercoord:L.LatLng = L.latLng(buffered.geometry.coordinates[0][i][0], buffered.geometry.coordinates[0][i][1]);
+            bufferPolygon[i] =  L.latLng(buffered.geometry.coordinates[0][i][0], buffered.geometry.coordinates[0][i][1]);
+            //this.drawnMarkers.addLayer(randomPlaces[i]);
+            // console.log('%cBuffered Object: paths ', 'color: blue'); 
+            // console.log(buffered.geometry.coordinates[0][i][0] + ' ' + buffered.geometry.coordinates[0][i][1]);
+        }
+
+        let bufferLayer:L.Polygon = L.polygon(bufferPolygon); bufferLayer.setStyle({fillColor:'orange', fillOpacity: 0.2, stroke:false });
+        let rectangleBound:L.Rectangle = L.rectangle(drawnBounds); rectangleBound.setStyle({fillColor:'orange', fillOpacity: 0.5,stroke:false });
+        this.drawnMarkers.addLayer(bufferLayer);
+        // this.drawnItems.addLayer(rectangleBound); 
+ 
+
+        console.log('Buffered Polygon LatLng Array: ');console.log(bufferPolygon);
+        //let p:L.LatLng = L.la
+    
+        // TO Create random points inside the bounding box
+
+
+
+        // Get points of interest from OverPass
+        let point_of_interest:string = 'node["natural"="peak"]';
+        let bbox:string = '('+ (String(bottomLeft.lat)) + ',' + (String(bottomLeft.lng)) + ',' + (String(topRight.lat)) + ',' + (String(topRight.lng)) + ')' + ';out;'
+
+        // Get points of interest from OverPass
+        
+        let request:string = 'http://overpass.osm.rambler.ru/cgi/interpreter?data=[out:json];' + encodeURIComponent(point_of_interest) +  encodeURIComponent(bbox);
+
+        console.log ('%cRequest passed to OverPass API, click to view: ' , 'background:green; color:white'); console.log (request);
+        this.overPass(request, buffered);
+  }  
+
+
+  public heightsTOJSON(data:string){
+      this._http.get(data)
+      .map((res) => res.json())
+      .subscribe(results => {
+      this.elevation = results;
+      console.log(this.elevation);
+      }, (rej) => {console.error("Could not load local data",rej)});
+
+  }
+
+
+  public overPass(address:string, buffered: GeoJSONFeature<any>):any {
+      /**
+       * Over-pass json response have decided not to have headers,
+       * So, I am forced to use two different methods for getting the json requests
+       * For google and mapzen api responses are with headers, do not use this method
+       * Just map and subscribe directly 
+       */
+      return this._http.get(address)
+      .subscribe((res) => {
+      this.POINTS_OF_INTEREST = res.json();
+      //console.log(this.POINTS_OF_INTEREST);
+      
+      let counter = 0;
+      if (this.POINTS_OF_INTEREST.elements.length > 0) {
+         console.log('%cPEAKS: ', 'color:blue');
+         let allpeaklabels:string;
+        for (let i = 0; i < this.POINTS_OF_INTEREST.elements.length; i++) {
+          counter++;
+          let position:L.LatLng = L.latLng (this.POINTS_OF_INTEREST.elements[i].lat, this.POINTS_OF_INTEREST.elements[i].lon, this.POINTS_OF_INTEREST.elements[i].tags.ele);
+          let peakname:string = this.POINTS_OF_INTEREST.elements[i].tags.name;
+          this.PEAKS [i]=  { "coord": position, "name": peakname } ;
+          let name = this.PEAKS[i].name;
+          allpeaklabels += peakname + ', ';
+          
+        }  
+      console.log(counter + ' Peak(s) were found within the bounding box, this should be refined to elements within the buffer distance');    
+      console.log(allpeaklabels); console.log(this.PEAKS);
+
+      // Removing items not inside the buffer radius
+      counter = 0;
+        let notInside = [];
+        let peakInsideArray = [];
+        let peakInside:L.Marker
+        for (let i = 0; i < this.PEAKS.length; i++){
+
+          let point = turf.point([this.POINTS_OF_INTEREST.elements[i].lat, this.POINTS_OF_INTEREST.elements[i].lon]);
+          //let pointArray = [this.POINTS_OF_INTEREST.elements[i].lat, this.POINTS_OF_INTEREST.elements[i].lon]
+          var isInside = turf.inside(point, buffered);
+          if (isInside) {
+            counter++
+            notInside.push(i);
+            let peakLatLng:L.LatLng = L.latLng (
+                                      this.POINTS_OF_INTEREST.elements[i].lat,
+                                      this.POINTS_OF_INTEREST.elements[i].lon
+                                      );
+          
+            peakInside = L.marker( peakLatLng, 
+            {
+            icon: this.peakIcon,
+            title: this.POINTS_OF_INTEREST.elements[i].lat + ' ' + this.POINTS_OF_INTEREST.elements[i].lat
+            }).bindTooltip(this.POINTS_OF_INTEREST.elements[i].tags.name , {permanent: true, direction: 'top', offset: [0, -5], });
+
+            peakInsideArray[i] = peakInside;
+            this.drawnMarkers.addLayer(peakInsideArray[i]);
+          }
+        }
+      console.log('%cOnly ' + ( counter )  + ' out of ' + (this.POINTS_OF_INTEREST.elements.length) + ' peaks were found within the buffer distance; this will be shown on the profile', 'color: white; background: blue');
+
+  } else console.log('%cNo Peaks were found within bounding box ', 'color: white ; background: red');
+
+    }, (rej) => {console.error("Could not get required information at this time",rej)})
+ 
+  } // Over Pass method
     
 } // Leaflet map class

@@ -22,15 +22,18 @@
         "../node_modules/leaflet/dist/leaflet.css",
         "../node_modules/font-awesome/css/font-awesome.css",
 		"../node_modules/bootstrap/dist/css/bootstrap.min.css",
+		"./styles/leaflet-draw/dist/leaflet.draw.css",
         "styles.css"
       ],
-      "scripts": [ "../node_modules/leaflet/dist/leaflet.js"
+      "scripts": [ "menu.js", "../node_modules/leaflet/dist/leaflet.js"
       ],
-      "environments": {
-        "source": "environments/environment.ts",
+	  
+		"environmentSource": "environments/environment.ts",
+	   "environments": {
         "dev": "environments/environment.ts",
         "prod": "environments/environment.prod.ts"
       }
+	  
     }
   ],
   "addons": [],
