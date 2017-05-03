@@ -45,6 +45,7 @@
     "leaflet-geocoder-mapzen": "latest",
     "leaflet-overpass-layer": "^2.5.1",
     "leaflet.locatecontrol": "^0.60.0",
+    "moment": "^2.18.1",
     "ng2-popover": "0.0.14",
     "ngx-bootstrap": "^1.6.6",
     "polyfill": "^0.1.0",

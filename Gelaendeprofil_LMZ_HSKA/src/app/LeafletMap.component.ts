@@ -275,11 +275,13 @@ import * as d3 from 'd3';
                           zoom: 12,
                           zoomControl: false,
                           scrollWheelZoom: true,
-                          drawControl: true,
+                          //drawControl: true,
 
                        }                     
                         );
       
+
+
       // Add tile layer to Map
       this.providers[this.initMap].addTo(this._map);
 
