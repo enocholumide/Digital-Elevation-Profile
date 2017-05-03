@@ -319,7 +319,7 @@ import * as d3 from 'd3';
 
       // Add Leaflet Draw
       var drawControl = new L.Control.Draw({
-          position:'bottomleft',
+          position:'topright',
           draw: {polygon:false, rectangle:false, circle:false, polyline:true, marker:false},
           edit: {
               featureGroup: this.drawnItems, // important for the editor options to be active and finsih draw
@@ -680,7 +680,7 @@ import * as d3 from 'd3';
 
       
       console.log('%cElevation Results: ', 'color: green');
-      //console.log(data);
+      console.log(data);
 
       this.getNearestPoints();
     }
@@ -708,6 +708,8 @@ import * as d3 from 'd3';
       }
     } // __onupdateView
 
+
+// buffer
 
     public getNearestPoints(){
         console.log('%cComputing nearest points: ', 'color: blue');
