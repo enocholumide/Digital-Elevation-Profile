@@ -274,7 +274,11 @@ import * as d3 from 'd3';
                         { center: [49.00, 8.40], 
                           zoom: 12,
                           zoomControl: false,
-                        });
+                          scrollWheelZoom: true,
+                          drawControl: true,
+
+                       }                     
+                        );
       
       // Add tile layer to Map
       this.providers[this.initMap].addTo(this._map);
@@ -313,7 +317,7 @@ import * as d3 from 'd3';
 
       
       // Leaflet plugins; the order is required
-      L.control.scale({ position: 'bottomright', metric: true, imperial: false,}).addTo(this._map); //Scale  //Anja
+      L.control.scale({ position: 'bottomright', metric: true, imperial: false,}).addTo(this._map);
       L.control.zoom({position: 'bottomright'}).addTo(this._map);
       L.control.locate({position: 'bottomright'}).addTo(this._map);
 

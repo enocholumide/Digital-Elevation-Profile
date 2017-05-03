@@ -33,6 +33,7 @@
     "@types/leaflet-draw": "^0.4.3",
     "@types/leaflet.locatecontrol": "^0.60.2",
     "@types/turf": "^3.5.32",
+    "angular2-click-to-edit": "^1.0.52",
     "angular2-font-awesome": "^1.1.0",
     "angular2-polyfill": "0.0.32",
     "bootstrap": "^4.0.0-alpha.6",
