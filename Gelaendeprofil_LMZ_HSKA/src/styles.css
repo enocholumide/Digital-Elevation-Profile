@@ -1,44 +1,8 @@
+/* You can add global styles to this file, and also import other style files */
+@import '../node_modules/leaflet-draw/dist/leaflet.draw.css';
+@import '../node_modules/bootstrap/dist/css/bootstrap.css';
+@import '../node_modules/leaflet-geocoder-mapzen/dist/leaflet-geocoder-mapzen.min.css';
 
-html, body {
-	width:100%;
-	height: 100%;
-}
-
-body { overflow: hidden;}
-
-.mainContent
-{
-  font-size: 14px;
-  margin-left: 10px;
-  margin-top: 10px;
-}
-
-.header{
-	min-height: 0;
-}
-
-a.main
-{
-  text-decoration: none;
-}
-
-a.main:hover
-{
-  text-decoration: underline;
-}
-
-p.padded
-{
-  padding: 10px;
-}
-
-
-*{
-	margin: 0;
-	padding: 0;
-	text-decoration: none;
-	list-style:none;
-}
 
 .toggle_menu{
 	position: fixed;
@@ -271,4 +235,5 @@ p.padded
     padding-right: 10px;
     height: 28px;
 }
+
 

@@ -1,0 +1,21 @@
+<div id="leaflet-map-component" class="leafletMapComponent"></div>
+
+    <div class="layersToggle" [ngStyle]="{'background-image': 'url(' + currentImage + ')'}"><div class="iconDescription">{{currentproviderDescription}}</div></div> 
+        
+    <div id="bottomContainer" class="container-fluid">
+        <div class="baseLayers">
+            <div class="icon1" (click)="_changeBasemapLayer(0)"><div class="iconDescription">{{providersDescription[0]}}</div></div>
+            <div class="icon2" (click)="_changeBasemapLayer(1)"><div class="iconDescription">{{providersDescription[1]}}</div></div>
+            <div class="icon3" (click)="_changeBasemapLayer(2)"><div class="iconDescription">{{providersDescription[2]}}</div></div>
+            <div class="icon4" (click)="_changeBasemapLayer(3)"><div class="iconDescription">{{providersDescription[3]}}</div></div>
+            <div class="icon5" (click)="_changeBasemapLayer(4)"><div class="iconDescription">{{providersDescription[4]}}</div></div>
+        </div>
+    </div>
+
+<input class="latlongMouse" value="{{coords}}" 
+        popover="Vivamus sagittis lacus vel augue laoreet rutrum faucibus."
+        popoverTitle="Popover on bottom"
+        placement="bottom"
+        required>
+
+<app-profile *ngIf="chartData" [data]="chartData"></app-profile>

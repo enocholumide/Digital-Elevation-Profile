@@ -1,12 +1,19 @@
-<button type="button" class="btn btn-danger"><i class="fa fa-pencil fa-fw" aria-hidden="true"></i></button>
-<div id="profile-bar-component" class="ProfileComponent">
+<div id="app-profile" class="ProfileComponent">
 
 
+<div id="sidebar-container-fluid" class = "container-fluid">  
+    <div class="dropdown">
+    <button class="fa fa-bars sidebartoggle" type="button" data-toggle="dropdown"></button>
+    <ul class="dropdown-menu" id="dropdown-menu">
+        <li><button class="fa fa-area-chart sidebarItems" id="item01" type="button"></button></li>
+        <li><button class="fa fa-line-chart sidebarItems" id="item02" type="button"></button></li>
+        <li><button class="fa fa-question-circle sidebarItems" type="button"></button></li>
+        <li><button class="fa fa-info-circle sidebarItems" type="button"></button></li>
+        <li><button class="fa fa-cogs sidebarItems" type="button"></button></li>
+    </ul>
+    </div>
 
-    <h1 class="test">Hello World - Profile Function Was Here</h1>
-
-
-
-
-
+    <div class="informationBlock" id="informationBlock">
+        <div id="d3-chart" #chart class="container-fluid"></div>
+    </div>
 </div>
