@@ -413,10 +413,9 @@ import * as d3 from 'd3';
                 };
                 //delete marker
                 if (element.id =='info3'){
-                  this.marker.
+                  
                 };
-                
-                // test, note @Anja
+
 
                 } //popup click event            
             }); // geocoder
