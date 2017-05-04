@@ -384,7 +384,7 @@ import * as d3 from 'd3';
           customPopup.innerHTML = ` <div class="markersdetails">
                                 <div class="info" id="info1">marker address</div>
                                 <div class="info" id="info2"><i class="fa fa fa-plus-circle"></i> show in profile</div>
-                                <div class="info" id="info3" click="_onRemoveMarker()"><i class="fa fa fa-times-circle"></i> delete</div>
+                                <div class="info" id="info3"><i class="fa fa fa-times-circle"></i> delete</div>
                               </div>
                             `;
 
@@ -397,22 +397,29 @@ import * as d3 from 'd3';
                 .bindTooltip(_selectedAddress , {permanent: true, direction: 'top', offset: [0, -5], })
                 .bindPopup(customPopup, { offset: [80, 175], })
                 .addTo(this._map)
+                .addEventListener
                 
                 console.log( 'searched markers: ');
                 console.log(this.marker);
 
-                this.marker.on('click', function(){
-                console.log('yay'); // test, note @Anja
-                })
-                /** // not working yet :(
-                document.getElementById('a').onclick = function(e) {
-                  if(e.target.addEventListener("confirm-button")){
-                      alert("Click Event Fired !")
-                      // do something
-                  }  
-                }
+                //Popup klick element
+                customPopup.onclick = function popClick(){
+                var element =  event.target as HTMLElement;
+                //Marker address
+                if (element.id =='info1'){
+                  console.log(element.id);
+                };
+                //show in profile
+                if (element.id =='info2'){
+                  console.log(element.id);
+                };
+                //delete marker
+                if (element.id =='info3'){
+                  
+                };
 
-                */               
+
+                } //popup click event            
             }); // geocoder
         } // _searchedLocation
 
