@@ -41,8 +41,8 @@ export class ProfileComponent implements OnInit, OnChanges {
     let element = this.chartContainer.nativeElement;
     console.log(element);
     //console.log(element)
-    this.width = 280;
-    this.height = 150;
+    this.width = 500;
+    this.height = 300;
     let svg = d3.select(element).append('svg')
       .attr('width', "100%")
       .attr('height', "100%");
@@ -57,7 +57,7 @@ export class ProfileComponent implements OnInit, OnChanges {
     let yDomain = [0, d3.max(this.data, d => d[1])];
 
     // create scales
-    this.xScale = d3.scaleBand().padding(0.1).domain(xDomain).rangeRound([0, this.width]);
+    this.xScale = d3.scaleLinear().domain(xDomain).range([0, this.width]);
     this.yScale = d3.scaleLinear().domain(yDomain).range([this.height, 0]);
 
     // bar colors

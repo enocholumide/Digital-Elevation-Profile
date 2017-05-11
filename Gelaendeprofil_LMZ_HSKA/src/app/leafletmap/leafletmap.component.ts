@@ -173,7 +173,7 @@ export class LeafletmapComponent implements OnInit {
   
       // Draw control options
       let drawControl = new L.Control.Draw({
-          position:'bottomleft',
+          position:'topright',
           draw: {polygon:false, rectangle:false, circle:false, polyline:true, marker:false},
           edit: {
               featureGroup: this.drawnItems}
