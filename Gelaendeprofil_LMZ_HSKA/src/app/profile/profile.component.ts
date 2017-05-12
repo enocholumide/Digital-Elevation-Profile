@@ -1,13 +1,18 @@
-import { Component, OnInit, OnChanges,
-         AfterViewInit, Input, ElementRef, ViewChild, NgZone } from '@angular/core';
-//const d3 = require('d3');
+import { Component, OnInit, OnChanges, AfterViewInit, Input, ElementRef, ViewChild } from '@angular/core';
+
+
+
 import * as moment from 'moment';
 import * as d3 from 'd3';
+
+
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
+
+
 export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
 
   @Input()  private data = [];
@@ -16,8 +21,8 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
   private host;
   private svg;
   private margin;
-  width: any;
-  height: any;
+  private width: any;
+  private height: any;
   private xScale;
   private yScale;
   private xAxis;
@@ -30,30 +35,28 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
   constructor() { }
 
   ngOnInit() {
-    this.margin = { top: 20, right: 20, left: 100, bottom: 20 };
-    this.width = 600;
-    this.height = 150;
-
-   // this.t = d3.transition()
-              // .duration(10);
+    this.margin = { top: 20, right: 20, left: 50, bottom: 20 };
+    this.width = 500;
+    this.height = 300;
   }
+
 
   ngAfterViewInit(){
     this.htmlElement = this.element.nativeElement;
     this.host = d3.select(this.htmlElement);
-
   }
+
 
   ngOnChanges() {
 
     if(!this.data || this.data.length === 0 || !this.host) return;
 
-    //var parseTime = d3.timeParse('%Y-%m-%dT00:00:00Z');
+    
 
     this.data.forEach((d: any) => {
 
-      d.date = d[0];
-      d.total = d[1];
+      d.location = d[0];
+      d.elevation = d[1];
     });
 
     if(!this.svg) {
@@ -76,8 +79,7 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
                      .attr('height', this.height + this.margin.top + this.margin.bottom)
                      .call(this.responsivefy)
                    .append('g')
-                     .attr('transform', `translate(${this.margin.left},
-                                                   ${this.margin.top})`);
+                     .attr('transform', `translate(${this.margin.left},      ${this.margin.top})`);
 
   }
 
@@ -85,45 +87,36 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
 
     this.svg.html('')
 
-    this.xScale = d3.scaleTime()
-                   .domain([d3.min(this.data, d => d[1]),
-                             d3.max(this.data, d => d[1])])
-                   .range([0, this.width]);
+    this.xScale = d3.scaleIdentity() .domain([d3.min(this.data, d => d[0]), d3.max(this.data, d => d[0])]) .range([0, this.width]);
 
-    this.yScale = d3.scaleLinear()
-                 .domain([d3.min(this.data, d => d.total), d3.max(this.data, d => d[1])])
-                 .range([this.height, 0]);
+    this.yScale = d3.scaleLinear() .domain([d3.min(this.data, d => d[1]), d3.max(this.data, d => d[1])]) .range([this.height, 0]);
 
     this.svg.append('g')
             .attr('transform', `translate(0, ${this.height})`)
-            .call(d3.axisBottom(this.xScale).ticks(6));
+            .call(d3.axisBottom(this.xScale));
 
     this.svg.append('g')
      .call(d3.axisLeft(this.yScale));
 
-    var line = d3.line()
-                 .x(d => this.xScale(d[0]))
-                 .y(d => this.yScale(d[1]))
-                 .curve(d3.curveCatmullRom.alpha(0.5));
+    let line = d3.line() .x(d => this.xScale(d[0])) .y(d => this.yScale(d[1]));
 
-    this.update = this.svg.selectAll('.line')
-                          .data(this.data);
+    this.update = this.svg.selectAll('.line').data(this.data);
     this.update
         .enter()
-        .append('path')
+        .append('area')
         .attr('class', 'line')
-        .transition(this.t)
-        .attr('d', d => line(this.data))
-        .style('stroke', '#1565C0')
-        .style('stroke-width', 2)
+        .transition(line)
+        .attr('d', d => line(d.elevation))
+        .style('stroke', '#153ac0')
+        .style('stroke-width', 3)
         .style('fill', 'none');
 
   }
 
   responsivefy(svg) {
 
-      var container = d3.select(svg.node().parentNode);
-      let margin = { top: 20, right: 20, left: 100, bottom: 20 };
+      var chart = d3.select(svg.node().parentNode);
+      let margin = { top: 20, right: 20, left:20, bottom: 20 };
       var width = parseInt(svg.style('width'));
       var height = parseInt(svg.style('height'));
       var aspect = width / height;
@@ -132,10 +125,10 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
          .attr('preserveAspectRatio', 'xMinYMid')
          .call(resize);
 
-      d3.select(window).on('resize.' + container.attr('id'), resize);
+      d3.select(window).on('resize.' + chart.attr('id'), resize);
 
       function resize() {
-        var targetWidth = parseInt(container.style('width'));
+        var targetWidth = parseInt(chart.style('width'));
 
         svg.attr('width', targetWidth);
         svg.attr('height', Math.round(targetWidth/aspect));
