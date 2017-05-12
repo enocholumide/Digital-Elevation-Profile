@@ -98,7 +98,8 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
     this.svg.append('g')
      .call(d3.axisLeft(this.yScale));
 
-    let line = d3.line() .x(d => this.xScale(d[0])) .y(d => this.yScale(d[1]));
+//    let line = d3.line() .x(d => this.xScale(d[0])) .y(d => this.yScale(d[1]));
+let line = d3.line() .x(function(d){return this.xScale(d[0])}) .y(function (d) {return this.yScale(d[1])});
 
     this.update = this.svg.selectAll('.line').data(this.data);
     this.update
@@ -108,10 +109,10 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
         .transition(line)
         .datum(this.data)
         .attr('d', d => line(this.data))
-        .attr('x', d => this.xScale(d[0]))
+      //  .attr('x', d => this.xScale(d[0]))
         .style('stroke', '#153ac0')
         .style('stroke-width', 3)
-        .style('fill', 'none');
+        .style('fill', 'area');
 
   }
 
