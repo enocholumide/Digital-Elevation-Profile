@@ -106,6 +106,7 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
         .append('path')
         .attr('class', 'line')
         .transition(line)
+        .datum(this.data)
         .attr('d', d => line(this.data))
         .attr('x', d => this.xScale(d[0]))
         .style('stroke', '#153ac0')
