@@ -109,9 +109,9 @@
 
 .d3-chart .axis path,
 .d3-chart .axis line {
-  stroke: #999;
+  stroke: #000000;
 }
 
 .d3-chart .axis text {
-  fill: #999;
+  fill: whitesmoke;
 }
