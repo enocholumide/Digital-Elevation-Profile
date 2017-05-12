@@ -103,10 +103,11 @@ export class ProfileComponent implements OnInit, OnChanges, AfterViewInit {
     this.update = this.svg.selectAll('.line').data(this.data);
     this.update
         .enter()
-        .append('area')
+        .append('path')
         .attr('class', 'line')
         .transition(line)
-        .attr('d', d => line(d.elevation))
+        .attr('d', d => line(this.data))
+        .attr('x', d => this.xScale(d[0]))
         .style('stroke', '#153ac0')
         .style('stroke-width', 3)
         .style('fill', 'none');
