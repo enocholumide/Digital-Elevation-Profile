@@ -29,6 +29,7 @@
     "bootstrap": "^3.3.7",
     "core-js": "^2.4.1",
     "d3": "^4.8.0",
+    "d3-svg-annotation": "^1.15.0",
     "font-awesome": "^4.7.0",
     "leaflet": "^1.0.3",
     "leaflet-draw": "^0.4.9",

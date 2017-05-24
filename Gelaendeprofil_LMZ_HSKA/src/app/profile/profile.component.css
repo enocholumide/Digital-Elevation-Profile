@@ -78,7 +78,7 @@
 .informationBlock{
     margin-left:50px;
     height: 300px;
-    width: 500px;  
+    width: 700px;  
     padding:10px;
     z-index:1;
     box-shadow: 0 0 35px rgba(123, 123, 1239, 0.8);
@@ -109,9 +109,24 @@
 
 .d3-chart .axis path,
 .d3-chart .axis line {
-  stroke: #000000;
+  stroke: blue;
 }
 
 .d3-chart .axis text {
   fill: whitesmoke;
+}
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #999999;
+  
+}
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 4.5px;
 }

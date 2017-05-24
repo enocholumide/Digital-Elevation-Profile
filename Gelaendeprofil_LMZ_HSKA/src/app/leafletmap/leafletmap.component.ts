@@ -618,7 +618,7 @@ export class LeafletmapComponent implements OnInit {
     public getNearestPoints(){
         console.log('%cComputing nearest points: ', 'color: blue');
         
-        let bufferDistance = 5000; //Meters
+        let bufferDistance = 2000; //Meters
         // Create a turf line along the nodes
         let multiLine = turf.lineString([this.storedPoints_LatLng]);
         let randomPoint:L.Marker;

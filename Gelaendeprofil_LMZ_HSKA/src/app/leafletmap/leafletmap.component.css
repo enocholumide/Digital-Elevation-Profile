@@ -203,3 +203,15 @@
 .custom {
 	color:blue;
 }
+.legend {
+    padding: 6px 8px;
+	width:150px;
+    font: 12px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+	position:absolute;
+    bottom:23px;
+	height:90px;}
+	
