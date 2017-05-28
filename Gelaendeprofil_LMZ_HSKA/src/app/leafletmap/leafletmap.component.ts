@@ -14,6 +14,7 @@ import 'leaflet-draw';
 import 'leaflet.locatecontrol';
 import '../../../node_modules/leaflet-geocoder-mapzen/dist/leaflet-geocoder-mapzen.js';
 
+
 // Turf
 import * as turf from 'turf';
 
@@ -42,7 +43,7 @@ export class LeafletmapComponent implements OnInit {
   public totalVertix:number;
 
   // BaseMap 
-  private providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];
+  private providersDescription = ['Satellit','Relief','Landschaft','Topographie','OSM'];
   private initMap = 4;
 
   // Elevation profile variables
@@ -66,7 +67,7 @@ export class LeafletmapComponent implements OnInit {
 
   // Leaflet Map and base maps parameters
   public _map: Map;
-  public coords = '...loading';
+  public coords = '...lädt';
   public currentSelector:number;
   public currentproviderDescription = this.providersDescription[this.initMap];
   public providersImages = [ '../assets/icons/satellitenbild.png',
@@ -143,6 +144,7 @@ export class LeafletmapComponent implements OnInit {
                           zoom: 12,
                           zoomControl: false,
                         });
+
                         
       
       // Add tile layer to Map
@@ -157,9 +159,21 @@ export class LeafletmapComponent implements OnInit {
       this._map.on('draw:deleted', this.__onDrawDeleted, this);
 
       // Leaflet plugins; the order is required
-      L.control.scale({ position: 'bottomright', metric: true, imperial: false,}).addTo(this._map); //Scale  //Anja
-      L.control.zoom({position: 'bottomright'}).addTo(this._map);
-      L.control.locate({position: 'bottomright'}).addTo(this._map);
+      L.control.scale({ position: 'bottomright', metric: true, imperial: false,}).addTo(this._map); //Scale  
+
+      L.control.zoom({  //Zoom
+        position: 'bottomright',
+        zoomInTitle: 'hinein zoomen',
+        zoomOutTitle: 'heraus zoomen',
+        }).addTo(this._map);   
+
+      L.control.locate({ //Geolocator
+        position: 'bottomright',
+        keepCurrentZoomLevel: true, //Keep zoom level
+        strings: {
+          title: 'Zeige mir wo ich bin',
+        }
+        }).addTo(this._map); //
       
       // Drawing Variables, Markers and Icons
       let polyline:any;
@@ -174,7 +188,9 @@ export class LeafletmapComponent implements OnInit {
       // Draw control options
       let drawControl = new L.Control.Draw({
           position:'topright',
-          draw: {polygon:false, rectangle:false, circle:false, polyline:true, marker:false},
+          draw: {polygon:false, rectangle:false, circle:false, 
+            polyline: true,
+            marker:false},
           edit: {
               featureGroup: this.drawnItems}
       });
@@ -841,7 +857,7 @@ export class LeafletmapComponent implements OnInit {
                           fullwidth: true,
                           expanded: false,
                           focus: true,                        // search nearby
-                          placeholder: 'Search nearby',
+                          placeholder: 'Suche Stadt:',
                           markers: false,                     // disable MAPZEN markers we just need the details from MAPZEN
                           params: {
                               layers: 'locality'}            //search only towns, hamlets, cities
