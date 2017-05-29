@@ -10,7 +10,6 @@ import { data } from './data';
 
 @Component({
   selector: 'app-profile',
-
 templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
   
@@ -26,8 +25,8 @@ export class ProfileComponent implements OnInit {
   private line: d3Shape.Line<[number, number]>;
 
   constructor() {
-    this.width = 690 - this.margin.left - this.margin.right ;
-    this.height = 300 - this.margin.top - this.margin.bottom;
+    this.width = 800 - this.margin.left - this.margin.right ;
+    this.height = 400 - this.margin.top - this.margin.bottom;
   }
 
   ngOnInit() {
@@ -56,8 +55,6 @@ export class ProfileComponent implements OnInit {
           .attr("class", "axis axis--x")
           .attr("transform", "translate(0," + this.height + ")")
           .call(d3Axis.axisBottom(this.x))
-          //.style("text-anchor", "center")
-         // .text("distance")
           ;
 
     this.svg.append("g")
@@ -70,15 +67,12 @@ export class ProfileComponent implements OnInit {
           .attr("dy", ".71em")
           .style("text-anchor", "end")
           .text("elevation")
-          /*.text(function(data, d => d.name) {
-            return d.name;
-          })*/
           ;
          }
 
   private drawLine() {
     this.line = d3Shape.line()
-                        .curve(d3.curveCardinal)
+                        .curve(d3.curveMonotoneX)
                        .x( (d: any) => this.x(d.dist) )
                        .y( (d: any) => this.y(d.ele) );
                        
@@ -89,19 +83,25 @@ export class ProfileComponent implements OnInit {
             .attr("d", this.line)
             .attr('stroke','blue')
             .attr("fill", "none")
-           .style('fill', 'area')
             ;
 
-    this.svg.selectAll('text')
+ 
+
+   this.svg.selectAll('text')
             .data(data)
             .enter()
             .append('text')
-            .text(function(d, i){ return (d.name)})
-            .attr("y", function(d){ return (d.name)})
-            .attr('x', function(d){return (d.dist)})
-            .attr("dy", ".93em")
-            
+           // .attr("style", "fill: red; writing-mode: tb; glyph-orientation-vertical: 0")
+            .text(function(d){ return (d.name)})
+           // .attr("y", function(d){return(d.ele)})
+            .attr("x",function(d){return (d.dist)})
+            .style("font-size", "14px")
+            .attr("text-anchor", "middle") 
+            .attr("dy", ".35em")
+
             ;
+ 
+
   }
 
 }

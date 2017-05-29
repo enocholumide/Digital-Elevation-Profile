@@ -77,11 +77,11 @@
 
 .informationBlock{
     margin-left:50px;
-    height: 300px;
-    width: 700px;  
-    padding:10px;
+    height: 400px;
+    width: 800px;  
+    padding:5px;
     z-index:1;
-    box-shadow: 0 0 35px rgba(123, 123, 1239, 0.8);
+    box-shadow: 0 0 35px rgba(1236, 123, 1239, 0.8);
 }
 
 
