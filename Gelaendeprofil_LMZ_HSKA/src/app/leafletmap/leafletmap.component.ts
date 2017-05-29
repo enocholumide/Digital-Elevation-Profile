@@ -843,6 +843,8 @@ export class LeafletmapComponent implements OnInit {
                           focus: true,                        // search nearby
                           placeholder: 'Search nearby',
                           markers: false,                     // disable MAPZEN markers we just need the details from MAPZEN
+                          params: {
+                              layers: 'locality'}            //search only towns, hamlets, cities
                         }).addTo(this._map);
 
       // get details from MAPZEN
