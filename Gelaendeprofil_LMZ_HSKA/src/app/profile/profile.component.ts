@@ -85,17 +85,19 @@ export class ProfileComponent implements OnInit {
             .attr("fill", "none")
             ;
 
- 
+
+let xScale= this.x;
+let yScale = this.y;
 
    this.svg.selectAll('text')
             .data(data)
             .enter()
             .append('text')
-           // .attr("style", "fill: red; writing-mode: tb; glyph-orientation-vertical: 0")
-            .text(function(d){ return (d.name)})
-           // .attr("y", function(d){return(d.ele)})
-            .attr("x",function(d){return (d.dist)})
-            .style("font-size", "14px")
+            .attr("style", "fill: red; writing-mode: tb; glyph-orientation-vertical: 0")
+            .attr("x", function(d, i) {return(xScale(d.dist))})
+            .attr("y", function(d,i){return(yScale(d.ele))})
+            .text(function(d, i){ return d.name})
+            .style("font-size", "10px")
             .attr("text-anchor", "middle") 
             .attr("dy", ".35em")
 
