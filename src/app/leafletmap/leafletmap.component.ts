@@ -346,11 +346,12 @@ export class LeafletmapComponent implements OnInit {
       // Empty existing stored points and re-populate
       this.storedPoints_LatLng = [];
       this.peaksDataArray = [];
-            let infoBox = document.createElement('a');
+      let infoBox = document.createElement('a');
       infoBox.innerHTML = 
       `   <form id="edit_labels" role="form">
                   <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">Edit label</span>
-                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">     
+                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">
+          </form>             
        `
       for (let i = 0; i < elayers._layers[this.lineLeafletID]._latlngs.length; i++) {
           this.storedPoints_LatLng[i] = L.latLng (
@@ -364,11 +365,8 @@ export class LeafletmapComponent implements OnInit {
                       icon: this.redSphereIcon,
                       title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
                       }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
-          
-          
-
+      
           this.drawnMajorNodes.addLayer(vertex);
-
             vertex.on('click', e =>
             infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
             vertex.bindPopup(infoBox, { offset: [0, 115], }),

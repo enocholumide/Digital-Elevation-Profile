@@ -89,19 +89,19 @@ L.drawLocal = {
 			// #TODO: this should be reorganized where actions are nested in actions
 			// ex: actions.undo  or actions.cancel
 			actions: {
-				title: 'Cancel drawing',
-				text: 'Cancel'
+				title: 'Zeichnen abbrechen',
+				text: 'Abbrechen'
 			},
 			finish: {
 				title: 'Finish drawing',
-				text: 'Finish'
+				text: 'Beenden'
 			},
 			undo: {
 				title: 'Delete last point drawn',
-				text: 'Delete last point'
+				text: 'Lösche letzten Punkt'
 			},
 			buttons: {
-				polyline: 'Draw a polyline',
+				polyline: 'Zeichne eine Polylinie',
 				polygon: 'Draw a polygon',
 				rectangle: 'Draw a rectangle',
 				circle: 'Draw a circle',
@@ -128,13 +128,13 @@ L.drawLocal = {
 				}
 			},
 			polyline: {
-				error: '<strong>Error:</strong> shape edges cannot cross!',
+				error: '<strong>Error:</strong> Linie darf sich nicht schneiden!',
 				tooltip: {
-					start: 'Click to start drawing line.',
-					cont: 'Click to continue drawing line.',
-					end: 'Click last point to finish line.',
+					start: 'Klick, um Zeichnen zu starten.',
+					cont: 'Klick, um weiter zu zeichnen.',
+					end: 'Klick letzten Punkt, um Zeichnen zu beenden.',
 					// Inserted@Enoch
-                    max: 'Maximum number of points (6) reached.'
+                    max: 'Maximale Anzahl von Punkten (6) erreicht.'
 				}
 			},
 			rectangle: {
@@ -154,30 +154,30 @@ L.drawLocal = {
 			actions: {
 				save: {
 					title: 'Save changes.',
-					text: 'Save'
+					text: 'speichern.'
 				},
 				cancel: {
 					title: 'Cancel editing, discards all changes.',
-					text: 'Cancel'
+					text: 'abbrechen'
 				}
 			},
 			buttons: {
-				edit: 'Edit layers.',
-				editDisabled: 'No layers to edit.',
-				remove: 'Delete layers.',
-				removeDisabled: 'No layers to delete.'
+				edit: 'Bearbeite Layer.',
+				editDisabled: 'Kein Layer vorhanden.',
+				remove: 'Lösche Layer.',
+				removeDisabled: 'Kein Layer vorhanden.'
 			}
 		},
 		handlers: {
 			edit: {
 				tooltip: {
-					text: 'Drag handles, or marker to edit feature.',
-					subtext: 'Click cancel to undo changes.'
+					text: 'Klick auf Punkt zum Bearbeiten.',
+					subtext: 'Klick abbrechen, um Änderungen zu verwerfen.'
 				}
 			},
 			remove: {
 				tooltip: {
-					text: 'Click on a feature to remove'
+					text: 'Zum Löschen auf Object klicken.'
 				}
 			}
 		}
@@ -637,6 +637,10 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 			this._map.addLayer(this._poly);
 		}
 
+		if (markersLength >= 6) {
+			this._showMaximumVertexErrorTooltip();
+		}
+
 		this._vertexChanged(latlng, true);
 	},
 
@@ -987,6 +991,23 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 		this._clearHideErrorTimeout();
 		this._hideErrorTimeout = setTimeout(L.Util.bind(this._hideErrorTooltip, this), this.options.drawError.timeout);
 	},
+
+	_showMaximumVertexErrorTooltip: function () {
+		this._errorShown = true;
+
+		this._tooltip
+			.showAsError()
+			.updateContent({ text: L.drawLocal.draw.handlers.polyline.tooltip.max });
+
+			// Update shape
+		this._updateGuideColor(this.options.drawError.color);
+		this._poly.setStyle({ color: this.options.drawError.color });
+
+		// Hide the error after 2 seconds
+		this._clearHideErrorTimeout();
+		this._hideErrorTimeout = setTimeout(L.Util.bind(this._hideErrorTooltip, this), this.options.drawError.timeout);
+	},
+
 
 	_hideErrorTooltip: function () {
 		this._errorShown = false;
