@@ -346,6 +346,12 @@ export class LeafletmapComponent implements OnInit {
       // Empty existing stored points and re-populate
       this.storedPoints_LatLng = [];
       this.peaksDataArray = [];
+            let infoBox = document.createElement('a');
+      infoBox.innerHTML = 
+      `   <form id="edit_labels" role="form">
+                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">Edit label</span>
+                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">     
+       `
       for (let i = 0; i < elayers._layers[this.lineLeafletID]._latlngs.length; i++) {
           this.storedPoints_LatLng[i] = L.latLng (
                                           elayers._layers[this.lineLeafletID]._latlngs[i].lat, 
@@ -359,9 +365,15 @@ export class LeafletmapComponent implements OnInit {
                       title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
                       }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
           
-          profileVertex[i] = vertex;
+          
 
-          this.drawnMarkers.addLayer(profileVertex[i]);
+          this.drawnMajorNodes.addLayer(vertex);
+
+            vertex.on('click', e =>
+            infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
+            vertex.bindPopup(infoBox, { offset: [0, 115], }),
+          ) 
+          profileVertex[i] = vertex;
         }
         
         // At the end of the loop, check if the stored items are more than 6, then slice the stored points
@@ -1271,7 +1283,7 @@ protected _geocoderMenu(e):void {
 		)
 		.bindTooltip(_selectedAddress , {permanent: true, direction: 'top', offset: [0, -5], })
 		
-        let placesPopUp = document.createElement('a');
+    let placesPopUp = document.createElement('a');
     placesPopUp.innerHTML = 
     ` <div class= "markersdetails">
         <div class="info" id="deleteMarker"><i class="fa fa fa-times-circle"></i> delete</div>
