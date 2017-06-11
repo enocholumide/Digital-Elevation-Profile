@@ -883,7 +883,7 @@ export class LeafletmapComponent implements OnInit {
           customPopup.innerHTML = ` <div class="markersdetails">
                                 <div class="info" id="info1">marker address</div>
                                 <div class="info" id="info2"><i class="fa fa fa-plus-circle"></i> show in profile</div>
-                                <div class="info" id="info3" click="_onRemoveMarker()"><i class="fa fa fa-times-circle"></i> delete</div>
+                                <div class="info" id="info3" click="_onRemoveMarker()"><i class="fa fa fa-times-circle"></i> löschen</div>
                               </div>
                             `;
 
