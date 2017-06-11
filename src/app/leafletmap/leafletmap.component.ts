@@ -73,6 +73,7 @@ export class LeafletmapComponent implements OnInit {
   public drawnLine:L.Polyline;
   public drawnItems:L.FeatureGroup;
   public drawnMarkers:L.FeatureGroup;
+  public geocodedPlaces:L.FeatureGroup;
   public placesMarker:L.Marker;
   public placesPopUp:HTMLAnchorElement;
   
@@ -177,7 +178,7 @@ export class LeafletmapComponent implements OnInit {
       if (e.target.id === 'deleteMarker') {
         let leafletid = e.path[2].attributes[0].value;
         console.log(leafletid);
-        this.drawnMarkers.removeLayer(leafletid);
+        this.geocodedPlaces.removeLayer(leafletid);
       }
     
   } // Host Listener
@@ -208,6 +209,7 @@ export class LeafletmapComponent implements OnInit {
       let markers:any;
       this.drawnItems = new L.FeatureGroup(polyline);
       this.drawnMarkers = new L.FeatureGroup(markers);
+      this.geocodedPlaces = new L.FeatureGroup(markers);
       this.redSphereIcon = L.icon({ iconUrl: 'http://www.newdesignfile.com/postpic/2014/08/red-circle-x-icon_366416.png',iconSize: [15, 15]});
       this.greenSphereIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Green_sphere.svg/768px-Green_sphere.svg.png', iconSize: [15,15]});
       this.yellowSphereIcon = L.icon({iconUrl: 'https://images.vexels.com/media/users/3/143296/isolated/preview/65e481f9924c73dec1035884e544f284-yellow-marble-ball-by-vexels.png', iconSize: [15,15]});
@@ -227,6 +229,8 @@ export class LeafletmapComponent implements OnInit {
       // Add all layers
       this._map.addLayer(this.drawnItems);
       this._map.addLayer(this.drawnMarkers);
+      this._map.addLayer(this.geocodedPlaces);
+      
       //TODO: Create Separate layer for peaks shown on the map
 
       this._searchedLocation();
@@ -1260,15 +1264,12 @@ protected _geocoderMenu(e):void {
         <div class="info" id="deleteMarker"><i class="fa fa fa-times-circle"></i> delete</div>
       </div>  `;
 
-    this.drawnMarkers.addLayer(placesMarker);
+    this.geocodedPlaces.addLayer(placesMarker);
     placesMarker.on('click', e => 
           placesPopUp.setAttribute('leafletid', String(e.target._leaflet_id)),
           placesMarker.bindPopup(placesPopUp, { offset: [30, 80], }),
     );
-
-
-
-             
+      
 	} // geocoder
 
 
