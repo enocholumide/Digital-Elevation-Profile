@@ -19,6 +19,11 @@
 	background-color: #f45342;
 }
 
+#edit_labels{
+	width:100px;
+	text-align: center;
+	text-decoration: none;
+}
 
 .sidebar_menu{
 	z-index: 5;

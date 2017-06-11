@@ -8,6 +8,8 @@ import { EmitterService } from '../shared/emitter.service';
 import { Overlay } from 'angular2-modal';
 import { Modal } from 'angular2-modal/plugins/bootstrap';
 
+import * as $ from 'jquery';
+
 // Import RxJs required methods
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
@@ -73,11 +75,10 @@ export class LeafletmapComponent implements OnInit {
   public drawnLine:L.Polyline;
   public drawnItems:L.FeatureGroup;
   public drawnMarkers:L.FeatureGroup;
+  public drawnMajorNodes:L.FeatureGroup;
   public geocodedPlaces:L.FeatureGroup;
   public placesMarker:L.Marker;
   public placesPopUp:HTMLAnchorElement;
-  
-
   
   // Icons
   public redSphereIcon:L.Icon;
@@ -85,8 +86,6 @@ export class LeafletmapComponent implements OnInit {
   public yellowSphereIcon:L.Icon;
   public greySphereIcon:L.Icon;
   public peakIcon:L.Icon;
-
-  
   public allPeaks:any;
 
   // Elevation request parameters, uses Google API (for now)
@@ -174,13 +173,21 @@ export class LeafletmapComponent implements OnInit {
     ) { overlay.defaultViewContainer = vcRef; }
 
   @HostListener('document:click', ['$event']) onClick(e) {
-    // For markers delete;
-      if (e.target.id === 'deleteMarker') {
-        let leafletid = e.path[2].attributes[0].value;
-        console.log(leafletid);
-        this.geocodedPlaces.removeLayer(leafletid);
-      }
     
+    // For profile markers
+    if (e.target.id === 'labelEdit') {
+      let id = e.path[2].attributes[0].value
+      let newLabel = String($('.form-control').val());
+      this.drawnMajorNodes.getLayer(id).setTooltipContent(newLabel);
+    }
+
+    // For markers delete;
+    if (e.target.id === 'deleteMarker') {
+      let leafletid = e.path[2].attributes[0].value;
+      console.log(leafletid);
+      this.geocodedPlaces.removeLayer(leafletid);
+    } 
+      
   } // Host Listener
 
   ngOnInit() {
@@ -210,6 +217,7 @@ export class LeafletmapComponent implements OnInit {
       this.drawnItems = new L.FeatureGroup(polyline);
       this.drawnMarkers = new L.FeatureGroup(markers);
       this.geocodedPlaces = new L.FeatureGroup(markers);
+      this.drawnMajorNodes = new L.FeatureGroup(markers);
       this.redSphereIcon = L.icon({ iconUrl: 'http://www.newdesignfile.com/postpic/2014/08/red-circle-x-icon_366416.png',iconSize: [15, 15]});
       this.greenSphereIcon = L.icon({iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Green_sphere.svg/768px-Green_sphere.svg.png', iconSize: [15,15]});
       this.yellowSphereIcon = L.icon({iconUrl: 'https://images.vexels.com/media/users/3/143296/isolated/preview/65e481f9924c73dec1035884e544f284-yellow-marble-ball-by-vexels.png', iconSize: [15,15]});
@@ -230,13 +238,14 @@ export class LeafletmapComponent implements OnInit {
       this._map.addLayer(this.drawnItems);
       this._map.addLayer(this.drawnMarkers);
       this._map.addLayer(this.geocodedPlaces);
+      this._map.addLayer(this.drawnMajorNodes);
       
       //TODO: Create Separate layer for peaks shown on the map
 
       this._searchedLocation();
       this.barcharttest()
 
-  } // On Initialize
+    } // On Initialize
 
     
     /**
@@ -255,14 +264,13 @@ export class LeafletmapComponent implements OnInit {
      * @param e 
      */
     protected __onDrawStart(e): void {
+      this.drawnMajorNodes.clearLayers();
       this.drawnItems.clearLayers();
       this.drawnMarkers.clearLayers();
 
       this.drawstart.emit();
     } 
     
-
-
     /**
      * Listens for when draw finishes on the map..
      * @param e 
@@ -276,11 +284,6 @@ export class LeafletmapComponent implements OnInit {
       
       this.drawnItems.addLayer(layer);
       
-
-
-
-
-
       // Stored leaflet ID for the line, this will be called when Edited - important
       this.lineLeafletID = 0;
       this.lineLeafletID = layer._leaflet_id;
@@ -288,6 +291,13 @@ export class LeafletmapComponent implements OnInit {
 
       // Empty stored points data that would be coming from the on draw edited event - see below
       this.storedPoints_LatLng = [];
+      let infoBox = document.createElement('a');
+      infoBox.innerHTML = 
+      `   <form id="edit_labels" role="form">
+                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">Edit label</span>
+                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">     
+          </form>  
+      `
       for (let i = 0; i < layer._latlngs.length; i++) {
           this.storedPoints_LatLng[i] = L.latLng (
                                     layer._latlngs[i].lat, 
@@ -296,22 +306,21 @@ export class LeafletmapComponent implements OnInit {
                        
           vertex = L.marker( layer._latlngs[i], 
                       {
-                      
                       icon: this.redSphereIcon,
                       title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
                       }).bindTooltip(this.getMarkerLabel(i) , {interactive:true, permanent: true, direction: 'top', offset: [0, -5], });
-          vertex['id'] = i; 
           
-        
-          
-          vertex.on('click', this.majorNodesMenu, this); 
+          this.drawnMajorNodes.addLayer(vertex);
 
+          vertex.on('click', e =>
+            infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
+            vertex.bindPopup(infoBox, { offset: [0, 115], }),
+          ) 
           profileVertex[i] = vertex;
-          this.drawnMarkers.addLayer(profileVertex[i]);    
       }
 
-      console.log('%cNew Created Points: ',  'color: red'); console.log(this.storedPoints_LatLng);
-      console.log('%cNew Created Feature Parameters:  ', 'color: blue');
+      //console.log('%cNew Created Points: ',  'color: red'); console.log(this.storedPoints_LatLng);
+      //console.log('%cNew Created Feature Parameters:  ', 'color: blue');
       
       this._getAllVertix();
       
@@ -320,6 +329,7 @@ export class LeafletmapComponent implements OnInit {
     protected __onEditStart(e): void {
 		
 		this.drawnMarkers.clearLayers();
+    this.drawnMajorNodes.clearLayers();
     this.editstart.emit();
     }
 
@@ -601,13 +611,16 @@ export class LeafletmapComponent implements OnInit {
 
       if (signal = 'editstart' ) {
           this.drawnMarkers.clearLayers();
+          this.drawnMajorNodes.clearLayers();
       } else if (signal = 'draw:edited') {
           this.drawnMarkers.clearLayers();
+          this.drawnMajorNodes.clearLayers();
       }
       
       else if (signal = 'drawstart' ) {
         this.drawnItems.clearLayers();
         this.drawnMarkers.clearLayers();
+        this.drawnMajorNodes.clearLayers();
       }
     } // __onupdateView
 
@@ -1657,6 +1670,8 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
    
     public majorNodesMenu(e) {
 
+    console.log(this.drawnMarkers);
+    console.log(e);
 
             var label="LL";
              
@@ -1668,10 +1683,15 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
                   <div class="input-group">
                     <span class="input-group-addon">Edit label</span>
                     <input #label id="msg" type="text" class="form-control" name="msg" placeholder="Edit label" >
-                    <div class="btn btn-primary" (click)="EventDispatcher.trigger('changeLabel', {vertex: e.target, label:'Hallo'})">TEST</div>
-                  </div>`
+                   </div>`
             )
         .open();
+
+        let input = $('.form-control').val();
+
+        console.log(input);
+
+        //console.log(this.drawnMarkers);
 
 
 
