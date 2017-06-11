@@ -1286,7 +1286,7 @@ protected _geocoderMenu(e):void {
     let placesPopUp = document.createElement('a');
     placesPopUp.innerHTML = 
     ` <div class= "markersdetails">
-        <div class="info" id="deleteMarker"><i class="fa fa fa-times-circle"></i> delete</div>
+        <div class="info" id="deleteMarker"><i class="fa fa fa-times-circle"></i> löschen</div>
       </div>  `;
 
     this.geocodedPlaces.addLayer(placesMarker);
