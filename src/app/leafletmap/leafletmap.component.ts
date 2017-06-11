@@ -174,9 +174,12 @@ export class LeafletmapComponent implements OnInit {
 
   @HostListener('document:click', ['$event']) onClick(e) {
     // For markers delete;
-    if (e.target.id === 'deleteMarker') {
-      this.drawnMarkers.removeLayer(e.path[2].attributes[0].value);
-    }
+      if (e.target.id === 'deleteMarker') {
+        let leafletid = e.path[2].attributes[0].value;
+        console.log(leafletid);
+        this.drawnMarkers.removeLayer(leafletid);
+      }
+    
   } // Host Listener
 
   ngOnInit() {
@@ -1230,13 +1233,6 @@ public  generateData() {
     //console.log(this.chartData);
   }
 
-protected _markerMenu(e, marker:L.Marker ) {
-
-  this.placesPopUp.setAttribute('leafletid', String(e.target._leaflet_id));        
-
-}
-
-
 protected _geocoderMenu(e):void {
   let _lat = Number(e.latlng.lat);
   let _lng = Number(e.latlng.lng);
@@ -1258,17 +1254,20 @@ protected _geocoderMenu(e):void {
 		)
 		.bindTooltip(_selectedAddress , {permanent: true, direction: 'top', offset: [0, -5], })
 		
-    this.drawnMarkers.addLayer(placesMarker);
-    this.placesPopUp = document.createElement('a');
-    this.placesPopUp.innerHTML = 
-    `
-      <div class= markersdetails">
+        let placesPopUp = document.createElement('a');
+    placesPopUp.innerHTML = 
+    ` <div class= "markersdetails">
         <div class="info" id="deleteMarker"><i class="fa fa fa-times-circle"></i> delete</div>
-      </div>
-    `;
+      </div>  `;
 
-    placesMarker.bindPopup(this.placesPopUp, { offset: [30, 80], });
-		placesMarker.on('click', e=> this._markerMenu(e, placesMarker));
+    this.drawnMarkers.addLayer(placesMarker);
+    placesMarker.on('click', e => 
+          placesPopUp.setAttribute('leafletid', String(e.target._leaflet_id)),
+          placesMarker.bindPopup(placesPopUp, { offset: [30, 80], }),
+    );
+
+
+
              
 	} // geocoder
 
