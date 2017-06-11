@@ -89,23 +89,23 @@ L.drawLocal = {
 			// #TODO: this should be reorganized where actions are nested in actions
 			// ex: actions.undo  or actions.cancel
 			actions: {
-				title: 'Cancel drawing',
-				text: 'Cancel'
+				title: 'Zeichnen abbrechen',
+				text: 'abbrechen'
 			},
 			finish: {
-				title: 'Finish drawing',
-				text: 'Finish'
+				title: 'Zeichnen beenden',
+				text: 'beenden'
 			},
 			undo: {
-				title: 'Delete last point drawn',
-				text: 'Delete last point'
+				title: 'Lösche letzten gesetzten Punkt',
+				text: 'lösche letzten Punkt'
 			},
 			buttons: {
-				polyline: 'Draw a polyline',
-				polygon: 'Draw a polygon',
-				rectangle: 'Draw a rectangle',
-				circle: 'Draw a circle',
-				marker: 'Draw a marker'
+				polyline: 'Zeichne ein Polylinie',
+				polygon: 'Zeichne ein Polygon',
+				rectangle: 'Zeichne ein Rechteck',
+				circle: 'Zeichne einen Kreis',
+				marker: 'Zeichne einen Marker'
 			}
 		},
 		handlers: {
@@ -128,23 +128,23 @@ L.drawLocal = {
 				}
 			},
 			polyline: {
-				error: '<strong>Error:</strong> shape edges cannot cross!',
+				error: '<strong>Error:</strong> Linienzug darf sich nicht überschneiden!',
 				tooltip: {
-					start: 'Click to start drawing line.',
-					cont: 'Click to continue drawing line.',
-					end: 'Click last point to finish line.',
+					start: 'Start zeichnen:  Klick.',
+					cont: 'Weiter zeichnen: Klick.',
+					end: 'Zeichnen beednen: Klick letzter Punkt.',
 					// Inserted@Enoch
-                    max: 'Maximum number of points (6) reached.'
+                    max: 'Maximale Anzahl an Punkten (6) erreicht.'
 				}
 			},
 			rectangle: {
 				tooltip: {
-					start: 'Click and drag to draw rectangle.'
+					start: 'Start zeichnen:  Klick.'
 				}
 			},
 			simpleshape: {
 				tooltip: {
-					end: 'Release mouse to finish drawing.'
+					end: 'Zeichnen beenden: Maus los lassen.'
 				}
 			}
 		}
@@ -153,31 +153,31 @@ L.drawLocal = {
 		toolbar: {
 			actions: {
 				save: {
-					title: 'Save changes.',
-					text: 'Save'
+					title: 'Änderungen speichern.',
+					text: 'speichern'
 				},
 				cancel: {
-					title: 'Cancel editing, discards all changes.',
-					text: 'Cancel'
+					title: 'Bearbeitung abbrechen, Änderungen verwerfen.',
+					text: 'abbrechen'
 				}
 			},
 			buttons: {
-				edit: 'Edit layers.',
-				editDisabled: 'No layers to edit.',
-				remove: 'Delete layers.',
-				removeDisabled: 'No layers to delete.'
+				edit: 'Layer bearbeiten.',
+				editDisabled: 'Kein Layer vorhanden.',
+				remove: 'Layer löschens.',
+				removeDisabled: 'Kein Layer vorhanden.'
 			}
 		},
 		handlers: {
 			edit: {
 				tooltip: {
-					text: 'Drag handles, or marker to edit feature.',
-					subtext: 'Click cancel to undo changes.'
+					text: 'Ziehe Punkt, oder klick auf Punkt zum Bearbeiten.',
+					subtext: 'Um Änderungen zu verwerfen, klick abbrechen.'
 				}
 			},
 			remove: {
 				tooltip: {
-					text: 'Click on a feature to remove'
+				  text: 'Zum Löschen auf Object klicken'
 				}
 			}
 		}
