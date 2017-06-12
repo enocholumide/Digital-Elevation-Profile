@@ -132,7 +132,7 @@ L.drawLocal = {
 				tooltip: {
 					start: 'Start zeichnen:  Klick.',
 					cont: 'Weiter zeichnen: Klick.',
-					end: 'Zeichnen beednen: Klick letzter Punkt.'
+					end: 'Zeichnen beednen: Klick letzter Punkt.',
 					// Inserted@Enoch
                     max: 'Maximale Anzahl an Punkten (6) erreicht.'
 				}
