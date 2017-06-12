@@ -66,7 +66,7 @@ export class LeafletmapComponent implements OnInit {
   public featureVertices = [];
 
   // BaseMap 
-  private providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];
+  private providersDescription = ['Satellit','Relief','Landschaft','Topographie','OSM'];
   private initMap = 4;
 
   // Elevation profile variables
