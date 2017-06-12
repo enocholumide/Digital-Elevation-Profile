@@ -294,8 +294,8 @@ export class LeafletmapComponent implements OnInit {
       let infoBox = document.createElement('a');
       infoBox.innerHTML = 
       `   <form id="edit_labels" role="form">
-                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">Label bearbeiten</span>
-                  <input id="edit_labels" type="text" class="form-control" placeholder="z.B. Punkt A">     
+                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">bearbeiten</span>
+                  <input id="edit_labels" type="text" class="form-control" placeholder="z.B. Berg X">     
           </form>  
       `
       for (let i = 0; i < layer._latlngs.length; i++) {
