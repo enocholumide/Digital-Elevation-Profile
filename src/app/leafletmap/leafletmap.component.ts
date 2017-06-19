@@ -60,7 +60,7 @@ export class LeafletmapComponent implements OnInit {
   public totalVertix:number;
 
   // BaseMap 
-  private providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];
+  private providersDescription = ['Satellit','Relief','Landschaft','Topographie','OSM'];
   private initMap = 4;
 
   // Elevation profile variables
@@ -287,8 +287,8 @@ export class LeafletmapComponent implements OnInit {
       let infoBox = document.createElement('a');
       infoBox.innerHTML = 
       `   <form id="edit_labels" role="form">
-                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">Edit label</span>
-                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">     
+                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">bearbeiten</span>
+                  <input id="edit_labels" type="text" class="form-control" placeholder="z.B. Berg X">     
           </form>  
       `
       for (let i = 0; i < layer._latlngs.length; i++) {
