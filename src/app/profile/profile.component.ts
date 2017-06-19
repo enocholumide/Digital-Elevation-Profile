@@ -1,107 +1,173 @@
-import { Component, OnInit, OnChanges, ViewChild, ElementRef, Input, ViewEncapsulation } from '@angular/core';
-import * as d3 from 'd3';
+import { Component, OnInit } from '@angular/core';
 import { EmitterService } from '../shared/emitter.service';
+
+import * as d3 from 'd3'; 'd3-selection';
+import * as d3Scale from "d3-scale";
+import * as d3Shape from "d3-shape";
+import * as d3Array from "d3-array";
+import * as d3Axis from "d3-axis";
+import {Selection, select } from 'd3-selection';
+import {transition} from 'd3-transition';
 
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
+  
 })
-export class ProfileComponent implements OnInit, OnChanges {
-  @ViewChild('chart') private chartContainer: ElementRef;
-  @Input() private data = [];
-  private margin: any = { top: 0, bottom: 0, left: 0, right: 0};
-  private chart: any;
+export class ProfileComponent implements OnInit {
+
+  private margin = {top: 50, right: 40, bottom: 50, left: 40};
   private width: number;
   private height: number;
+  private x: any;
+  private y: any;
+  private svg: any;
+  private line: d3Shape.Line<[number, number]>;
+  private lineData:Array<any>;
+
   private xScale: any;
   private yScale: any;
-  private colors: any;
-  private xAxis: any;
-  private yAxis: any;
 
-  private peakAndRiverData;
+  private chart: any;
 
-  constructor(private _emitterService: EmitterService) { this._emitterService.case$.subscribe(data => this.peakAndRiverData = data)}
+  private counter = 0;
 
-  ngOnInit() { this.createChart(); if (this.data) {this.updateChart()} }
+  constructor(private _emitterService: EmitterService) {
+    this.width = 800 - this.margin.left - this.margin.right ;
+    this.height = 400 - this.margin.top - this.margin.bottom;
 
-  ngOnChanges() { if (this.chart) {this.updateChart()} }
+    this._emitterService.case$.subscribe(newdata => this.switch(newdata));
+  }
+ 
 
-  createChart() {
-    let element = this.chartContainer.nativeElement;
-    console.log(element);
-    //console.log(element)
-    this.width = 280;
-    this.height = 150;
-    let svg = d3.select(element).append('svg')
-      .attr('width', "100%")
-      .attr('height', "100%");
-
-    // chart plot area
-    this.chart = svg.append('g')
-      .attr('class', 'bars')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
-
-    // define X & Y domains
-    let xDomain = this.data.map(d => d[0]);
-    let yDomain = [0, d3.max(this.data, d => d[1])];
-
-    // create scales
-    this.xScale = d3.scaleBand().padding(0.1).domain(xDomain).rangeRound([0, this.width]);
-    this.yScale = d3.scaleLinear().domain(yDomain).range([this.height, 0]);
-
-    // bar colors
-    this.colors = d3.scaleLinear().domain([0, this.data.length]).range(<any[]>['red', 'blue']);
-
-    // x & y axis
-    this.xAxis = svg.append('g')
-      .attr('class', 'axis axis-x')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + this.height})`)
-      .call(d3.axisBottom(this.xScale));
-    this.yAxis = svg.append('g')
-      .attr('class', 'axis axis-y')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`)
-      .call(d3.axisLeft(this.yScale));
+  switch(newdata) {
+    this.counter++;
+    //console.log(newdata);
+    this.lineData = newdata;
+    if (this.counter > 1) {this.updateChart()} else {this.initAxis()}
   }
 
-  updateChart() {
-    // update scales & axis
-    this.xScale.domain(this.data.map(d => d[0]));
-    this.yScale.domain([0, d3.max(this.data, d => d[1])]);
-    this.colors.domain([0, this.data.length]);
-    this.xAxis.transition().call(d3.axisBottom(this.xScale));
-    this.yAxis.transition().call(d3.axisLeft(this.yScale));
+  ngOnInit() {
+    this.lineData = [];    
+    this.initSvg();  
+  }
 
-    let update = this.chart.selectAll('.bar')
-      .data(this.data);
+   private initSvg() {
+    this.svg = d3.select("svg")
+                 .append("g")
+                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");;
+  }
+
+  private initAxis() {
+    this.x = d3Scale.scaleLinear().range([0, this.width]);
+    this.y = d3Scale.scaleLinear().range([this.height, 0]);
+    this.x.domain([d3.min(this.lineData, d => d.x), d3.max(this.lineData, d => d.x)]) .range([0, this.width]);
+    this.y.domain([d3.min(this.lineData, d => d.y), d3.max(this.lineData, d => d.y)]) .range([this.height, 0]);
+    this.drawAxis();
+  }
+
+  private drawAxis() {
+
+    this.svg.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + this.height + ")")
+          .call(d3Axis.axisBottom(this.x))
+          ;
+
+    this.svg.append("g")
+          .attr("class", "axis axis--y")
+          .call(d3Axis.axisLeft(this.y))
+          .append("text")
+          .attr("class", "axis-title")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("elevation")
+          ;
+          this.drawLine();
+         }
+
+  private drawLine() {
+    this.line = d3Shape.line()
+                        .curve(d3.curveMonotoneX)
+                        .x( (d: any) => this.x(d.x) )
+                        .y( (d: any) => this.y(d.y) );
+                       
+
+    this.svg.append("path")
+            .datum(this.lineData)
+            .attr("class", "line")
+            .attr("d", this.line)
+            .attr('stroke','blue')
+            .attr("fill", "none")
+            ;
+
+
+this.xScale= this.x;
+this.yScale = this.y;
+
+   this.svg.selectAll('text')
+            .data(this.lineData)
+            .enter()
+            .append('text')
+            .attr("style", "fill: red; writing-mode: tb; glyph-orientation-vertical: 0")
+            .attr("x", function(d, i) {return(this.xScale(d.x))})
+            .attr("y", function(d,i){return(this.yScale(d.y))})
+            .text(function(d, i){ return d.name})
+            .style("font-size", "10px")
+            .attr("text-anchor", "middle") 
+            .attr("dy", ".35em")
+
+            ;
+  }
+
+
+  private updateChart(){
+    
+    // TODO
+    this.x.domain([d3.min(this.lineData, d => d.x), d3.max(this.lineData, d => d.x)]) .range([0, this.width]);
+    this.y.domain([d3.min(this.lineData, d => d.y), d3.max(this.lineData, d => d.y)]) .range([this.height, 0]);
+
+    this.x.call(d3.axisBottom(this.xScale));
+    this.y.call(d3.axisLeft(this.yScale));
+
+
+        this.line = d3Shape.line()
+                        .curve(d3.curveMonotoneX)
+                        .x( (d: any) => this.x(d.x) )
+                        .y( (d: any) => this.y(d.y) );
+
+    let update = this.svg.selectAll('.line')
+      .data(this.lineData);
 
     // remove exiting bars
     update.exit().remove();
 
-    // update existing bars
-    this.chart.selectAll('.bar').transition()
-      .attr('x', d => this.xScale(d[0]))
-      .attr('y', d => this.yScale(d[1]))
-      .attr('width', d => this.xScale.bandwidth())
-      .attr('height', d => this.height - this.yScale(d[1]))
-      .style('fill', (d, i) => this.colors(i));
+    this.svg.selectAll('.line').transition()
+      
+            
+            .attr("class", "line")
+            .attr("d", this.line)
+            .attr('stroke','blue')
+            .attr("fill", "none")
+            ;
 
-    // add new bars
-    update
+      update
       .enter()
-      .append('rect')
-      .attr('class', 'bar')
-      .attr('x', d => this.xScale(d[0]))
-      .attr('y', d => this.yScale(0))
-      .attr('width', this.xScale.bandwidth())
-      .attr('height', 0)
-      .style('fill', (d, i) => this.colors(i))
-      .transition()
-      .delay((d, i) => i * 10)
-      .attr('y', d => this.yScale(d[1]))
-      .attr('height', d => this.height - this.yScale(d[1]));
-  }
-}
+      .append("path")
+      .datum(this.lineData)
+      .attr("class", "line")
+      .attr('x', d => this.xScale(d.x))
+      .attr('y', d => this.yScale(d.y))
+      .attr("d", this.line)
+      .attr('stroke','blue')
+      .attr("fill", "none")
+      ;
 
+
+  }
+
+}

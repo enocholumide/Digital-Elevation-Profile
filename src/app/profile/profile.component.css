@@ -77,15 +77,10 @@
 
 .informationBlock{
     margin-left:50px;
-    height: inherit;
-    width: inherit;
-    padding:20px;
+    height: auto;
+    width: 800px; 
     z-index:1;
-    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
 }
-
-
-
 
 .active{
     background-color: #f45342;
@@ -103,28 +98,38 @@
 #d3-chart {
   width: inherit;
   height: inherit;
-  background-color: black; 
-
-  
-}
-
-.d3-chart .axis path,
-.d3-chart .axis line {
-  stroke: #999;
-}
-
-.d3-chart .axis text {
-  fill: #999;
+  background-color: wheat; 
 }
 
 #impressum{
-    margin-left:50px;
-    height: auto;
-    width: 500px;
     background-color: white;
+}
+  
+.media {
     padding:20px;
-    z-index:1;
-    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
+}
+.d3-chart .axis path,
+.d3-chart .axis line {
+  stroke: blue;
+}
+
+.d3-chart .axis text {
+  fill: whitesmoke;
+}
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #999999;
+  
+}
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 4.5px;
 }
 
 #stakeholders{
@@ -137,7 +142,7 @@
     padding:10px; 
 }
 
-.fa-linkedin, .fa-facebook {
+.fa-linkedin {
     color:#0099CC;
     float: right;
 }

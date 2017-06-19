@@ -5,9 +5,6 @@ import { Observable } from 'rxjs/Observable';
 import { GeneralHttpService } from '../shared/general-http.service';
 import { EmitterService } from '../shared/emitter.service';
 
-import { Overlay } from 'angular2-modal';
-import { Modal } from 'angular2-modal/plugins/bootstrap';
-
 import * as $ from 'jquery';
 
 // Import RxJs required methods
@@ -46,24 +43,21 @@ export class LeafletmapComponent implements OnInit {
   @Output() edited: EventEmitter<any> = new EventEmitter();
   @Output() deleted: EventEmitter<any> = new EventEmitter();
 
-
-  public lineGraphData = [];
   public peaksGraphData = [];
   public riverGraphData = [];
   public peaksCurrentData = [];
-  public newTest:string;
   public markerLabel = ['A', 'B', 'C', 'D', 'E', 'F'];
 
   private peaksData: GeoJSONFeatureCollection<any>;
   private elevationData;
   private peaksDataArray = [];
   private chartData = [];
-  public totalLength:number;
-  public totalVertix:number;
   public majorNodeIndex = [];
   public fullSinglePart = [];
   public storedPoints_LatLng = [];
   public featureVertices = [];
+  public totalLength:number;
+  public totalVertix:number;
 
   // BaseMap 
   private providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];
@@ -163,20 +157,19 @@ export class LeafletmapComponent implements OnInit {
       ];
   public currentImage = this.providersImages[this.initMap];
 
-  constructor( 
+  constructor
+    ( 
     private _http: Http, 
     private _elevationRequest: GeneralHttpService,
     private _pointsOfInterestRequest: GeneralHttpService,
     private _emitterService: EmitterService,
-    overlay: Overlay, vcRef: ViewContainerRef, public modal: Modal,
-    private el: ElementRef
-    ) { overlay.defaultViewContainer = vcRef; }
+    ) { }
 
   @HostListener('document:click', ['$event']) onClick(e) {
     
     // For profile markers
     if (e.target.id === 'labelEdit') {
-      let id = e.path[2].attributes[0].value
+      let id = e.path[2].attributes[0].value;
       let newLabel = String($('.form-control').val());
       this.drawnMajorNodes.getLayer(id).setTooltipContent(newLabel);
     }
@@ -243,7 +236,7 @@ export class LeafletmapComponent implements OnInit {
       //TODO: Create Separate layer for peaks shown on the map
 
       this._searchedLocation();
-      this.barcharttest()
+      
 
     } // On Initialize
 
@@ -346,12 +339,11 @@ export class LeafletmapComponent implements OnInit {
       // Empty existing stored points and re-populate
       this.storedPoints_LatLng = [];
       this.peaksDataArray = [];
-      let infoBox = document.createElement('a');
+            let infoBox = document.createElement('a');
       infoBox.innerHTML = 
       `   <form id="edit_labels" role="form">
                   <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">Edit label</span>
-                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">
-          </form>             
+                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">     
        `
       for (let i = 0; i < elayers._layers[this.lineLeafletID]._latlngs.length; i++) {
           this.storedPoints_LatLng[i] = L.latLng (
@@ -365,8 +357,11 @@ export class LeafletmapComponent implements OnInit {
                       icon: this.redSphereIcon,
                       title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
                       }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
-      
+          
+          
+
           this.drawnMajorNodes.addLayer(vertex);
+
             vertex.on('click', e =>
             infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
             vertex.bindPopup(infoBox, { offset: [0, 115], }),
@@ -552,7 +547,7 @@ export class LeafletmapComponent implements OnInit {
         }
         
       this.drawnLine = L.polyline(this.featureVertices, {color: 'black'});
-      this.drawnMarkers.addLayer(this.drawnLine);
+      //this.drawnMarkers.addLayer(this.drawnLine);
 
       // Here, we have the coords of the nodes and all vertix
       // The vertix coords will be sent for z - values
@@ -591,9 +586,9 @@ export class LeafletmapComponent implements OnInit {
       let label = "";
       let labelIndex = false;
 
+      let tempData:Array<any> = [];
       for (let i = 0; i < n; i++) {
-        this.lineGraphData[0] = [sumLength, elevation.results[i].elevation|0, this.getMarkerLabel(0)];
-        //this.lineGraphData[0] = {x: sumLength, y:(elevation.results[i].elevation)|0, name:this.getMarkerLabel(0)};
+        if (i === 0){ tempData[0] = {x: sumLength|0, y:(elevation.results[i].elevation)|0, name:this.getMarkerLabel(0)}};
         if (i > 0) {
           let fromPoint = turf.point([elevation.results[i-1].location.lng, elevation.results[i-1].location.lat]);
           let toPoint = turf.point([elevation.results[i].location.lng, elevation.results[i].location.lat]);
@@ -601,12 +596,13 @@ export class LeafletmapComponent implements OnInit {
             if (i === this.majorNodeIndex[j]){ label = this.getMarkerLabel(j) }
           }
           let temp = turf.distance(fromPoint, toPoint, 'meters'); sumLength = sumLength + temp;
-          this.lineGraphData[i] = [sumLength|0, elevation.results[i].elevation|0, label];
-          //this.lineGraphData[i] = {x: sumLength|0, y:(elevation.results[i].elevation)|0, name:label};
+          tempData[i] = {x: sumLength|0, y:(elevation.results[i].elevation)|0, name:label};
         }
       }
 
-      console.log('%cLine Graph Data will be send to the profile component', 'background:purple; color:white'); console.log(this.lineGraphData);
+      this._emitterService.publishData(tempData);
+
+      console.log('%cLine Graph Data will be send to the profile component', 'background:purple; color:white'); console.log(tempData);
       
     } // sendElevationToProfile
 
@@ -819,7 +815,7 @@ export class LeafletmapComponent implements OnInit {
 
           //console.log('Peak Point: ' + peakName);
           let lines = L.polyline([peakPoint, this.featureVertices[lowestIndex]]);
-          this.drawnMarkers.addLayer(lines);
+          //this.drawnMarkers.addLayer(lines);
 
           // Deal with peaks snapped to nodes
           for (let nn = 0; nn < this.storedPoints_LatLng.length ; nn++) {
@@ -830,11 +826,11 @@ export class LeafletmapComponent implements OnInit {
                   onNode = true;
                   if (peakPoint.lng < this.storedPoints_LatLng[nn].lng) {
                     //console.log('%cWEST SIDE', 'color:white; background:purple');
-                    this.plotPerpendicular(peakName, peakPoint, lowestIndex, -1, true, 'notforced', 'send');
+                    this.plotPerpendicular(peakName, peakPoint, lowestIndex, -1, false, 'notforced', 'send');
                     
                     } else {
                     //console.log('%cEAST SIDE', 'color:white; background:darkred');
-                    this.plotPerpendicular(peakName, peakPoint, lowestIndex, +1, true, 'notforced', 'send');
+                    this.plotPerpendicular(peakName, peakPoint, lowestIndex, +1, false, 'notforced', 'send');
                   } 
               } 
           
@@ -850,9 +846,9 @@ export class LeafletmapComponent implements OnInit {
               //console.log('Distance Backward: ' + distanceBack);
 
               if (distanceForward > distanceBack) {
-                  this.plotPerpendicular(peakName, peakPoint, lowestIndex, -1, true, 'plot', 'send');
+                  this.plotPerpendicular(peakName, peakPoint, lowestIndex, -1, false, 'plot', 'send');
               } else {
-                  this.plotPerpendicular(peakName, peakPoint, lowestIndex, +1, true, 'plot', 'send');
+                  this.plotPerpendicular(peakName, peakPoint, lowestIndex, +1, false, 'plot', 'send');
               }
           } // Peaks not snapped to main nodes
 
@@ -1237,29 +1233,6 @@ export class LeafletmapComponent implements OnInit {
        
     } // _changeBasemapLayer
 
-
-public barcharttest(){
-        // give everything a chance to get loaded before starting the animation to reduce choppiness
-    setTimeout(() => {
-      this.generateData();
-
-      // change the data periodically
-      setInterval(() => this.generateData(), 3000);
-    }, 1000);
-}
-
-// test code - ignore
-public  generateData() {
-    this.chartData = [];
-    for (let i = 0; i < (8 + Math.floor(Math.random() * 10)); i++) {
-      this.chartData.push([
-        `Index ${i}`,
-        Math.floor(Math.random() * 100)
-      ]);
-    }
-    //console.log(this.chartData);
-  }
-
 protected _geocoderMenu(e):void {
   let _lat = Number(e.latlng.lat);
   let _lng = Number(e.latlng.lng);
@@ -1284,7 +1257,7 @@ protected _geocoderMenu(e):void {
     let placesPopUp = document.createElement('a');
     placesPopUp.innerHTML = 
     ` <div class= "markersdetails">
-        <div class="info" id="deleteMarker"><i class="fa fa fa-times-circle"></i> delete</div>
+        <div class="info" id="deleteMarker"><i class="fa fa fa-times-circle"></i> löschen</div>
       </div>  `;
 
     this.geocodedPlaces.addLayer(placesMarker);
@@ -1471,7 +1444,7 @@ public onDrawLine (point1:L.LatLng, point2:L.LatLng, color?:string) {
         color = 'black';
       }
       let line = L.polyline([point1, point2], {color: color});
-      this.drawnMarkers.addLayer(line);
+      //this.drawnMarkers.addLayer(line);
   }
 
 /**
@@ -1672,48 +1645,8 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
       data[1] = {peak:this.peaksGraphData};
       console.log('%cRiver and Peaks Data', 'color:white; background:black');
       console.log(data);
-      this._emitterService.publishData(data);
+      //this._emitterService.publishData(data);
     }
-
-   
- 
-   
-    public majorNodesMenu(e) {
-
-    console.log(this.drawnMarkers);
-    console.log(e);
-
-            var label="LL";
-             
-
-        this.modal.prompt()
-        .size('sm')
-        .showClose(true)
-        .body(`
-                  <div class="input-group">
-                    <span class="input-group-addon">Edit label</span>
-                    <input #label id="msg" type="text" class="form-control" name="msg" placeholder="Edit label" >
-                   </div>`
-            )
-        .open();
-
-        let input = $('.form-control').val();
-
-        console.log(input);
-
-        //console.log(this.drawnMarkers);
-
-
-
-         // e.target.setTooltipContent(label);
-
-        // this.EventDispatcher.trigger('changeLabel', {vertex: e.target, label:'Hallo'});
-       
-    
-  }
-    
-
-
 
 } // Leaflet map class
 

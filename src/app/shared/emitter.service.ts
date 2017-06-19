@@ -4,5 +4,5 @@ import { Subject }    from 'rxjs/Subject';
 @Injectable()
 export class EmitterService {
   private case = new Subject<any>(); case$ = this.case.asObservable(); 
-  publishData(data: any) { this.case.next(data) }
+  publishData(data:Array<any>) { this.case.next(data) }
 }
