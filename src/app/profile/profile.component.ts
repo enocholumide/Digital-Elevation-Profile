@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnChanges } from '@angular/core';
 import { EmitterService } from '../shared/emitter.service';
 
 import * as d3 from 'd3'; 'd3-selection';
@@ -6,6 +6,7 @@ import * as d3Scale from "d3-scale";
 import * as d3Shape from "d3-shape";
 import * as d3Array from "d3-array";
 import * as d3Axis from "d3-axis";
+
 import {Selection, select } from 'd3-selection';
 import {transition} from 'd3-transition';
 
@@ -25,10 +26,22 @@ export class ProfileComponent implements OnInit {
   private y: any;
   private svg: any;
   private line: d3Shape.Line<[number, number]>;
+  private area: d3Shape.Area<[number, number]>;
   private lineData:Array<any>;
+  private nodeLabel:Array<any>;
+  private peakData:any;
+  private riverData:any;
+
+  private xSCALE: any;
+  private ySCALE: any;
+
+  private xAxis: any;
+  private yAxis: any;
 
   private xScale: any;
   private yScale: any;
+  private update;
+  
 
   private chart: any;
 
@@ -38,136 +51,244 @@ export class ProfileComponent implements OnInit {
     this.width = 800 - this.margin.left - this.margin.right ;
     this.height = 400 - this.margin.top - this.margin.bottom;
 
-    this._emitterService.case$.subscribe(newdata => this.switch(newdata));
+      
+
+    this._emitterService.case$.subscribe( newdata => this.switch(newdata) );
+    //this._emitterService.caseRiverandPeak$.subscribe(newdata => this.peaksAndRivers(newdata));
   }
  
+  peaksAndRivers(newdata) {
 
-  switch(newdata) {
-    this.counter++;
-    //console.log(newdata);
-    this.lineData = newdata;
-    if (this.counter > 1) {this.updateChart()} else {this.initAxis()}
+    alert("HERE");
+    console.log(newdata.peak);
+
+    
+    
   }
 
+  switch(newdata) { this.lineData = newdata; this.createElevationProfile() }
+
   ngOnInit() {
+    this.update = false;
     this.lineData = [];    
-    this.initSvg();  
+    this.initSvg();
   }
 
    private initSvg() {
     this.svg = d3.select("svg")
                  .append("g")
-                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");;
+                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
   }
 
-  private initAxis() {
-    this.x = d3Scale.scaleLinear().range([0, this.width]);
-    this.y = d3Scale.scaleLinear().range([this.height, 0]);
-    this.x.domain([d3.min(this.lineData, d => d.x), d3.max(this.lineData, d => d.x)]) .range([0, this.width]);
-    this.y.domain([d3.min(this.lineData, d => d.y), d3.max(this.lineData, d => d.y)]) .range([this.height, 0]);
-    this.drawAxis();
-  }
-
-  private drawAxis() {
-
-    this.svg.append("g")
-          .attr("class", "axis axis--x")
-          .attr("transform", "translate(0," + this.height + ")")
-          .call(d3Axis.axisBottom(this.x))
-          ;
-
-    this.svg.append("g")
-          .attr("class", "axis axis--y")
-          .call(d3Axis.axisLeft(this.y))
-          .append("text")
-          .attr("class", "axis-title")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 6)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-          .text("elevation")
-          ;
-          this.drawLine();
-         }
-
-  private drawLine() {
-    this.line = d3Shape.line()
-                        .curve(d3.curveMonotoneX)
-                        .x( (d: any) => this.x(d.x) )
-                        .y( (d: any) => this.y(d.y) );
-                       
-
-    this.svg.append("path")
-            .datum(this.lineData)
-            .attr("class", "line")
-            .attr("d", this.line)
-            .attr('stroke','blue')
-            .attr("fill", "none")
-            ;
-
-
-this.xScale= this.x;
-this.yScale = this.y;
-
-   this.svg.selectAll('text')
-            .data(this.lineData)
-            .enter()
-            .append('text')
-            .attr("style", "fill: red; writing-mode: tb; glyph-orientation-vertical: 0")
-            .attr("x", function(d, i) {return(this.xScale(d.x))})
-            .attr("y", function(d,i){return(this.yScale(d.y))})
-            .text(function(d, i){ return d.name})
-            .style("font-size", "10px")
-            .attr("text-anchor", "middle") 
-            .attr("dy", ".35em")
-
-            ;
-  }
-
-
-  private updateChart(){
+  private createElevationProfile(){
     
-    // TODO
-    this.x.domain([d3.min(this.lineData, d => d.x), d3.max(this.lineData, d => d.x)]) .range([0, this.width]);
-    this.y.domain([d3.min(this.lineData, d => d.y), d3.max(this.lineData, d => d.y)]) .range([this.height, 0]);
+    if ( (this.lineData.hasOwnProperty("editedLabel")) ) { 
+        
+      this.svg.selectAll('#nodeLabels').remove();
+      let newLabel:any = this.lineData;
+      this.nodeLabel[newLabel.index].name = newLabel.editedLabel;
+      this.appendNodeLabels();
 
-    this.x.call(d3.axisBottom(this.xScale));
-    this.y.call(d3.axisLeft(this.yScale));
+    }
+    
+    else if (! ((this.lineData.hasOwnProperty("river")) || this.lineData.hasOwnProperty("peak")) ) {
+    
+      this.nodeLabel = [];
+      let tempLabel = "";
+      for ( let i = 0; i < this.lineData.length; i++ ) {
+        if ( this.lineData[i].node === "Y" ) {
+          if ( !(this.lineData[i].name === tempLabel) )
+              { this.nodeLabel.push( {x: this.lineData[i].x, name: this.lineData[i].name, index: i} ) }
+        } tempLabel = this.lineData[i].name;
+      }
 
+      this.xScale = d3Scale.scaleLinear()
+          .domain([0, d3.max(this.lineData, function(d) { return d.x; })])
+          .range([0, this.width]);
 
-        this.line = d3Shape.line()
-                        .curve(d3.curveMonotoneX)
-                        .x( (d: any) => this.x(d.x) )
-                        .y( (d: any) => this.y(d.y) );
+      this.yScale = d3Scale.scaleLinear()
+          .domain([0, d3.max(this.lineData, function(d) { return d.y; })])
+          .range([this.height, 0]);
 
-    let update = this.svg.selectAll('.line')
-      .data(this.lineData);
+      this.xAxis = d3Axis.axisBottom(this.x).scale(this.xScale);
+      this.yAxis = d3Axis.axisLeft(this.y).scale(this.yScale);
 
-    // remove exiting bars
-    update.exit().remove();
+      var xScale = this.xScale;                    
+      var yScale = this.yScale;
 
-    this.svg.selectAll('.line').transition()
+      this.area = d3.area()
+          .curve(d3.curveMonotoneX)
+          .x(function(d:any) { return xScale(d.x); })
+          .y0(this.height)
+          .y1(function(d:any) { return yScale(d.y); });
+
+      this.line = d3Shape.line()
+                          .curve(d3.curveMonotoneX)
+                          .x( (d: any) => xScale(d.x) )
+                          .y( (d: any) => yScale(d.y) )
+                          ;
+
+      if (this.update === false) {
       
-            
-            .attr("class", "line")
-            .attr("d", this.line)
-            .attr('stroke','blue')
-            .attr("fill", "none")
-            ;
+          this.svg.append("path")
+              .datum(this.lineData)
+              .attr("class", "area")
+              .attr("d", this.area)
 
-      update
-      .enter()
-      .append("path")
-      .datum(this.lineData)
-      .attr("class", "line")
-      .attr('x', d => this.xScale(d.x))
-      .attr('y', d => this.yScale(d.y))
-      .attr("d", this.line)
-      .attr('stroke','blue')
-      .attr("fill", "none")
-      ;
+          this.svg.append("path")
+              .datum(this.lineData)
+              .attr("class", "line")
+              .attr("d", this.line)
+              .attr('stroke','red')
+              .attr("fill", "none")
+              ;
+                  
+          this.svg.append("g")
+                  .attr("class", "x axis")
+                  .attr("transform", "translate(0," + this.height + ")")
+                  .call(this.xAxis);
+
+          this.svg.append("g")
+              .attr("class", "y axis")
+              .call(this.yAxis);
+
+          this.appendNodeLabels();
+              
+
+    } else if (this.update === true) {  this.updateElevationProfile() }
+    
+    this.update = true;
+
+  }  else { this.insertlabels() }
+
+ }
+
+ /**
+  * 
+  * Enoch
+  */
+ private insertlabels() {
+
+    var xScale = this.xScale;                    
+    var yScale = this.yScale;
+  
+    if ( this.lineData.hasOwnProperty("river") ) {
+
+      // -------------------------------------------
+      this.riverData = this.lineData;
+      let river:Array<any> = this.riverData.river;
+      // -------------------------------------------
+
+      if (river.length > 0) {
+        var riverLabels = this.svg.selectAll("g rivers").data(river); 
+        var riverLabelsEnter = riverLabels.enter().append("g");
+        var circle = riverLabelsEnter.append("circle")
+          .attr("r", 5)
+          .attr('cx', function(d:any) { return xScale(d.x); })
+          .attr('cy', function(d:any) { return yScale(d.y); })
+          .attr("id", "rivers")
+          .attr("fill", "blue")
+          
+        riverLabelsEnter.append("text")
+          .text( (d: any) => (d.name) )
+          .attr("x", (d: any) => xScale(d.x) - 15 )
+          .attr("y", (d: any) => yScale(d.y) - 10 )
+          .attr("id", "rivers")
+          .attr("font_family", "sans-serif")
+          .attr("font-size", "14px")
+          .attr("fill", "darkblue");
+      }
+    }
+
+    if ( this.lineData.hasOwnProperty("peak") ) {
+
+      // -------------------------------------------
+      this.peakData = this.lineData;
+      let peak:Array<any> = this.peakData.peak;
+      // ------------------------------------------- 
+
+      if (peak.length > 0) {
+        var peakLabels = this.svg.selectAll("g peaks").data(peak); 
+        var peaksLabelsEnter = peakLabels.enter().append("g");  
+        var circle = peaksLabelsEnter.append("circle")
+          .attr("r", 5)
+          .attr('cx', function(d:any) { return xScale(d.x); })
+          .attr('cy', function(d:any) { return yScale(d.y); })
+          .attr("id", "peaks")
+          .attr("fill", "black");
+          
+        peaksLabelsEnter.append("text")
+          .text( (d: any) => (d.name) )
+          .attr("x", ( d: any) => xScale(d.x) - 15 )
+          .attr("y", ( d: any) => yScale(d.y) - 10 )
+          .attr("id", "peaks")
+          .attr("font_family", "sans-serif")
+          .attr("font-size", "14px")
+          .attr("fill", "purple");
+      }
+    }
+
+ }
 
 
+  private updateElevationProfile() {
+
+    console.log("Update");
+
+      let updateLine = this.svg.selectAll('.line').remove();
+      let updateArea = this.svg.selectAll('.area').remove();
+      this.svg.selectAll('#peaks').remove();
+      this.svg.selectAll('#rivers').remove();
+      this.svg.selectAll('#nodeLabels').remove();
+ 
+      this.svg.append("path")
+          .datum(this.lineData)
+          .attr("class", "line")
+          .attr("d", this.line)
+          .attr('stroke','red')
+          .attr("fill", "none");
+
+      this.svg.append("path")
+          .datum(this.lineData)
+          .attr("class", "area")
+          .attr("d", this.area);
+
+      this.appendNodeLabels();         
+
+      this.svg.selectAll("g .y.axis").transition()
+          .call(this.yAxis);
+
+      this.svg.selectAll("g .x.axis").transition()
+          .call(this.xAxis);
+    
   }
 
-}
+  private appendNodeLabels() {
+
+    var xScale = this.xScale;
+    var yScale = this.yScale;
+
+    var labels = this.svg.selectAll("g nodeTexts")
+                .data(this.nodeLabel)
+            
+            var labelsEnter = labels.enter()
+              .append("g")
+              
+            var circle = labelsEnter.append("circle")
+              .attr("id", "nodeLabels")
+              .attr("r", 20)
+              .attr('cx', function(d:any) { return xScale(d.x); })
+              .attr("fill", "red")
+
+              labelsEnter
+              .append("text")
+              .attr("id", "nodeLabels")
+              .attr('dx', function(d:any) { return xScale(d.x); })
+              .attr('dy', 20/4)
+              .attr("text-anchor", "middle")
+              .text(function(d){return d.name})
+              .attr("stroke", "white")
+
+  } // Append NodeLabels
+
+} // Profile Class

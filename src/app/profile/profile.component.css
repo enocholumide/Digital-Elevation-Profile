@@ -98,7 +98,7 @@
 #d3-chart {
   width: inherit;
   height: inherit;
-  background-color: wheat; 
+  background-color: white; 
 }
 
 #impressum{
@@ -145,4 +145,13 @@
 .fa-linkedin {
     color:#0099CC;
     float: right;
+}
+
+path.area {
+    fill: lightsteelblue;
+    stroke-width: 0;
+}
+
+#nodeLabels{
+    z-index: 50;
 }

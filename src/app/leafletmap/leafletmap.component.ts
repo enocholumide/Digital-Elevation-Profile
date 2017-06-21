@@ -43,6 +43,8 @@ export class LeafletmapComponent implements OnInit {
   @Output() edited: EventEmitter<any> = new EventEmitter();
   @Output() deleted: EventEmitter<any> = new EventEmitter();
 
+  private peaksReady:EventEmitter<any> = new EventEmitter();
+
   public peaksGraphData = [];
   public riverGraphData = [];
   public peaksCurrentData = [];
@@ -169,9 +171,19 @@ export class LeafletmapComponent implements OnInit {
     
     // For profile markers
     if (e.target.id === 'labelEdit') {
+      console.log(e);
       let id = e.path[2].attributes[0].value;
       let newLabel = String($('.form-control').val());
       this.drawnMajorNodes.getLayer(id).setTooltipContent(newLabel);
+
+      console.log(id);
+      console.log(this.drawnMajorNodes);
+
+      let layer:any = this.drawnMajorNodes.getLayer(id);
+
+      let editedLabel = { editedLabel: newLabel, index: layer.index };
+
+      this._emitterService.publishData(editedLabel);
     }
 
     // For markers delete;
@@ -303,6 +315,9 @@ export class LeafletmapComponent implements OnInit {
                       title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
                       }).bindTooltip(this.getMarkerLabel(i) , {interactive:true, permanent: true, direction: 'top', offset: [0, -5], });
           
+          vertex["index"] = i;
+          console.log(vertex);
+          
           this.drawnMajorNodes.addLayer(vertex);
 
           vertex.on('click', e =>
@@ -351,21 +366,24 @@ export class LeafletmapComponent implements OnInit {
                                           elayers._layers[this.lineLeafletID]._latlngs[i].lng
                                     );
           // Refuse to draw markers when the nodes are more than 6 - the maximum                           
-          if (i <= 5) {  
+          if (i <= 5) {
+
           vertex = L.marker( elayers._layers[this.lineLeafletID]._latlngs[i], 
                       {
                       icon: this.redSphereIcon,
                       title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
                       }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
           
-          
+          vertex["index"] = i;
+          alert("vertex");
+          console.log(vertex);
 
           this.drawnMajorNodes.addLayer(vertex);
 
             vertex.on('click', e =>
             infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
-            vertex.bindPopup(infoBox, { offset: [0, 115], }),
-          ) 
+            vertex.bindPopup(infoBox, { offset: [0, 115], })) 
+          
           profileVertex[i] = vertex;
         }
         
@@ -587,16 +605,17 @@ export class LeafletmapComponent implements OnInit {
       let labelIndex = false;
 
       let tempData:Array<any> = [];
+      let forNode = false;
       for (let i = 0; i < n; i++) {
-        if (i === 0){ tempData[0] = {x: sumLength|0, y:(elevation.results[i].elevation)|0, name:this.getMarkerLabel(0)}};
+        if (i === 0){ tempData[0] = {x: sumLength|0, y:(elevation.results[i].elevation)|0, name:this.getMarkerLabel(0), node:"Y"}};
         if (i > 0) {
           let fromPoint = turf.point([elevation.results[i-1].location.lng, elevation.results[i-1].location.lat]);
           let toPoint = turf.point([elevation.results[i].location.lng, elevation.results[i].location.lat]);
           for (let j = 0; j < this.majorNodeIndex.length; j++){
-            if (i === this.majorNodeIndex[j]){ label = this.getMarkerLabel(j) }
+            if (i === this.majorNodeIndex[j]){ label = this.getMarkerLabel(j); forNode = true }
           }
           let temp = turf.distance(fromPoint, toPoint, 'meters'); sumLength = sumLength + temp;
-          tempData[i] = {x: sumLength|0, y:(elevation.results[i].elevation)|0, name:label};
+          tempData.push({x: sumLength|0, y:(elevation.results[i].elevation)|0, name:label, node: forNode ? "Y" : "N"});
         }
       }
 
@@ -786,30 +805,8 @@ export class LeafletmapComponent implements OnInit {
           let onNode = false;
 
           // Compute the distance of each peak to all feature vertices and get the lowest
-          distArray = [];
-          for (let j = 0; j < this.featureVertices.length; j++) {
-
-                distArray[j] = (peakPoint.distanceTo(this.featureVertices[j]));
-
-                if (j === this.featureVertices.length - 1) {
-                      //console.log(distArray);
-                      lowestValue = Math.min(...distArray);
-                      //console.log('Distance is : ' + lowestValue);
-
-                      for (let p = 0; p < distArray.length; p++) {
-                        if (lowestValue === distArray[p]){
-                          lowestIndex = p;
-                        }
-                      }
-                        //console.log('This peak lowest distance is at : ' + lowestIndex);
-                        //console.log('Distance is : ' + lowestValue)
-                      let n = this.featureVertices.length;
-                      if ((lowestIndex === n - 1) && peakPoint.lng < this.featureVertices[n-1].lng) {
-                        counter++;
-                        //drawSketch = true;
-                      }
-                }
-        } // conclude distance to all feature vertix
+          
+        lowestIndex = this.getLowestIndex(peakPoint);
         
         if (drawSketch) {
 
@@ -819,20 +816,21 @@ export class LeafletmapComponent implements OnInit {
 
           // Deal with peaks snapped to nodes
           for (let nn = 0; nn < this.storedPoints_LatLng.length ; nn++) {
-
               // Deal with peaks snapped to major nodes
               if (this.featureVertices[lowestIndex] === this.storedPoints_LatLng[nn]) {
                   //console.log('%cTrue, item on Node', 'color:white; background:green');
                   onNode = true;
-                  if (peakPoint.lng < this.storedPoints_LatLng[nn].lng) {
-                    //console.log('%cWEST SIDE', 'color:white; background:purple');
-                    this.plotPerpendicular(peakName, peakPoint, lowestIndex, -1, false, 'notforced', 'send');
-                    
-                    } else {
-                    //console.log('%cEAST SIDE', 'color:white; background:darkred');
-                    this.plotPerpendicular(peakName, peakPoint, lowestIndex, +1, false, 'notforced', 'send');
-                  } 
-              } 
+                  
+                    if (peakPoint.lng < this.storedPoints_LatLng[nn].lng) {
+                      //console.log('%cWEST SIDE', 'color:white; background:purple');   
+                      this.plotPerpendicular(peakName, peakPoint, lowestIndex, -1, false, 'notforced', 'send');
+                      } else {
+                      //console.log('%cEAST SIDE', 'color:white; background:darkred');
+                      this.plotPerpendicular(peakName, peakPoint, lowestIndex, +1, false, 'notforced', 'send');
+                    }
+
+              }
+              
           
           } // Peaks snapped to nodes
         
@@ -1036,11 +1034,15 @@ export class LeafletmapComponent implements OnInit {
     let sortedSnappedPeakPoints = sortedPeaksWithFeaturePoints.filter(a => !(a.vertex));
 
     // 5.5 Format filtered items to x and y for profile component
-    this.peaksGraphData = [];
+    let temp = [];
     for (let i = 0; i < sortedSnappedPeakPoints.length; i++) {
-      this.peaksGraphData[i] = {x:sortedSnappedPeakPoints[i].distance|0, y:sortedSnappedPeakPoints[i].geometry.alt|0, name:sortedSnappedPeakPoints[i].name}
+      temp[i] = {x:sortedSnappedPeakPoints[i].distance|0, y:sortedSnappedPeakPoints[i].geometry.alt|0, name:sortedSnappedPeakPoints[i].name}
     }
-    console.log ('%cPeaks Graph Data ' , 'background:purple; color:white'); console.log(this.peaksGraphData);   
+    //console.log ('%cPeaks Graph Data ' , 'background:purple; color:white'); console.log(temp);
+
+    let peakData = {peak:[]};
+    peakData.peak = temp;
+    this._emitterService.publishData(peakData);
     
 } // Process Peaks
 
@@ -1172,30 +1174,99 @@ export class LeafletmapComponent implements OnInit {
         let sumLength = 0;
 
         for (let i = 0; i < n - 1; i++) {
-          sortedRiversWithFeaturePoints[0].distance = 0;
+          if (i === 0) { 
+            sortedRiversWithFeaturePoints[0].distance = 0;
+            sortedRiversWithFeaturePoints[0].index = i;  
+          }
           if (i > 0) {
           let fromPoint = turf.point([sortedRiversWithFeaturePoints[i-1].geometry.lng, sortedRiversWithFeaturePoints[i-1].geometry.lat]);
           let toPoint = turf.point([sortedRiversWithFeaturePoints[i].geometry.lng, sortedRiversWithFeaturePoints[i].geometry.lat]);
           let temp = turf.distance(fromPoint, toPoint, 'meters');
           sumLength = sumLength + temp;
           sortedRiversWithFeaturePoints[i].distance = sumLength|0;
+          sortedRiversWithFeaturePoints[i].index = i;
           }
         }
 
         // Remove feature nodes
         let sortedRiverPoints = sortedRiversWithFeaturePoints.filter(a => !(a.vertex));
         // Compute final data
+        /** 
         this.riverGraphData = [];
         for (let i = 0; i < sortedRiverPoints.length; i++) {
-          this.riverGraphData[i] = {x:sortedRiverPoints[i].distance|0, y:0, name:sortedRiverPoints[i].name}
+          this.riverGraphData[i] = {x:sortedRiverPoints[i].distance|0, y:0, name:sortedRiverPoints[i].name, geometry:sortedRiverPoints[i].geometry}
         }
-        console.log ('%cRiver Graph Data ' , 'background:green; color:white'); console.log(this.riverGraphData);
+        */
 
-        this.onfinish();
+
+//console.log(this.peaksCurrentData, this.peaksCurrentData.length);
+        
+        let allPoints = [];
+        for (let i = 0; i < sortedRiverPoints.length; i++) {
+          allPoints.push(sortedRiverPoints[i].geometry);
+        }
+
+        if (!(allPoints.length === 0)) {
+          let request = this.formatToGoogleElevationRequest(allPoints, this.GOOGLE_API_KEY);  
+          this._elevationRequest.getRequest(request)
+          .subscribe(  data =>{ this.sendRiversToProfile(data, sortedRiverPoints) },
+          err => console.error(err));
+        }
       }
     } else { console.log ('%cNo River(s) Found: ' , 'background:red; color:white') }
     
+    console.log ('%cINFO ' , 'background:blue; color:white'); console.log(this.riverGraphData);
+    //this.onfinish();
+
   } // Process Rivers
+
+
+/**
+ * 
+ * 
+ * Enoch
+ * @param data 
+ * @param sortedRiverPoints 
+ */
+sendRiversToProfile(data, sortedRiverPoints){
+
+  let temp = [];
+  for (let i = 0; i < data.results.length; i++) {
+    
+    let c = [];
+    let ppPoint = sortedRiverPoints[i].geometry;
+    let index = this.getLowestIndex(ppPoint);
+    let googleHeight = data.results[i].elevation;
+
+    if(index === 0) {
+      c = [0 , 1];
+    } else if (index === this.featureVertices.length - 1) {c = [-1, 0] }
+    else {
+      let distanceForward = ppPoint.distanceTo(this.featureVertices[index+1]);
+      let distanceBack = ppPoint.distanceTo(this.featureVertices[index-1]);
+      
+      if (distanceForward > distanceBack) {
+                  c = [-1, 0];
+      } else {
+          c = [0 , 1];
+      }
+  }
+    
+    //-----------------------------------------
+    let node1 = L.latLng(this.elevationData.results[index+c[0]].location.lat, this.elevationData.results[index+c[0]].location.lng, this.elevationData.results[index+c[0]].elevation);
+    let node2 = L.latLng(this.elevationData.results[index+c[1]].location.lat, this.elevationData.results[index+c[1]].location.lng, this.elevationData.results[index+c[1]].elevation);
+    //-----------------------------------------
+    let interpolatedHeight = this.interpolateHeight(ppPoint, node1, node2 );
+    //-----------------------------------------
+    
+    temp[i] = { x:sortedRiverPoints[i].distance|0, y:interpolatedHeight|0, name:sortedRiverPoints[i].name };
+  
+  }
+    let riverData = {river:[]};
+    riverData.river = temp;
+    this._emitterService.publishData(riverData);
+
+}
 
 
    public _searchedLocation (): void {
@@ -1292,11 +1363,26 @@ private plotPerpendicular (peakName:string, a:L.LatLng, b: number, c:number, plo
 
     let peakPoint = a;
     let lowestIndex = b;
+    let nextFeaturePoint;
+
+
+    //console.log(lowestIndex + c);
 
     let peakTurfPoint = turf.point([peakPoint.lng, peakPoint.lat]);
     let closestFeaturePoint = turf.point([this.featureVertices[lowestIndex].lng, this.featureVertices[lowestIndex].lat]);
-    let nextFeaturePoint = turf.point([this.featureVertices[lowestIndex + c].lng, this.featureVertices[lowestIndex + c].lat]);
+   
 
+    try {
+      nextFeaturePoint = turf.point([this.featureVertices[lowestIndex + c].lng, this.featureVertices[lowestIndex + c].lat]);
+    } catch (error) {
+        if ((lowestIndex + c) < 0) {
+            nextFeaturePoint = turf.point([this.featureVertices[lowestIndex + 1].lng, this.featureVertices[lowestIndex + 1].lat]);
+        } 
+        else {
+            nextFeaturePoint = turf.point([this.featureVertices[lowestIndex - 1].lng, this.featureVertices[lowestIndex - 1].lat]);
+        }
+    }
+    
     let featuresBearing = turf.bearing(closestFeaturePoint, nextFeaturePoint);
     //console.log('Turf Features Bearing: ' + featuresBearing);
     let closestToPeakBearing = turf.bearing(closestFeaturePoint, peakTurfPoint);
@@ -1640,12 +1726,36 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
      * Enoch.
      */
     public onfinish() {
-      let data = [];
-      data[0] = {river:this.riverGraphData};
-      data[1] = {peak:this.peaksGraphData};
+      let data= {peak:[], river:[]};
+      data.peak = this.peaksGraphData;
+      data.river= this.riverGraphData;
       console.log('%cRiver and Peaks Data', 'color:white; background:black');
       console.log(data);
-      //this._emitterService.publishData(data);
+      this._emitterService.publishData(data);
+    }
+
+    /**
+     * Get the shortest point on the feature vertice
+     * @param point 
+     */
+    public getLowestIndex(point:L.LatLng):number {
+        let lowestIndex = 0;
+        let lowestValue = 0;
+        let distArray = [];
+
+        for (let j = 0; j < this.featureVertices.length; j++) {
+            distArray[j] = (point.distanceTo(this.featureVertices[j]));
+
+            if (j === this.featureVertices.length - 1) {
+                      lowestValue = Math.min(...distArray);
+                      for (let p = 0; p < distArray.length; p++) {
+                        if (lowestValue === distArray[p]){
+                          lowestIndex = p;
+                        }
+                      }
+            }
+        }
+        return lowestIndex;
     }
 
 } // Leaflet map class
