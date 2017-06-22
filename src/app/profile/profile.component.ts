@@ -67,6 +67,17 @@ export class ProfileComponent implements OnInit {
 
   }
 
+  /**
+   * Method makes decision on all incoming data (from the leaflet map component)
+   * The first coniditon recieves the map intialized from the lealfet map.
+   * This is important in displaying markers on mouseover on the elevation profile.
+   * 
+   * The else condition passes to the create elevation profile where further decisons are made based on the 
+   * property of the incoming data.
+   * 
+   * Enoch
+   * @param newdata 
+   */
   switch(newdata) {
     if (newdata.hasOwnProperty("leafletmap")) {
       this.map = newdata;
@@ -79,15 +90,21 @@ export class ProfileComponent implements OnInit {
     this.initSvg();
   }
  
-
    private initSvg() {
     this.svg = d3.select("svg")
                  .append("g")
                  .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
-  }
+    }
 
+
+    /**
+     * Method recieves all incoming data and check its properties.
+     * 
+     * Enoch
+     */
   private createElevationProfile(){
 
+    // If data is an edited label data, remove existing node labels and re-append 
     if ( (this.lineData.hasOwnProperty("editedLabel")) ) {
 
       console.log("Label Edited...");
@@ -98,6 +115,8 @@ export class ProfileComponent implements OnInit {
       this.appendNodeLabels();
 
     }
+    
+    // If data is not peaks or river data, then draw the svg axis based on the data and plot the profile
     
     else if (! ((this.lineData.hasOwnProperty("river")) || this.lineData.hasOwnProperty("peak")) ) {
     
@@ -152,16 +171,17 @@ export class ProfileComponent implements OnInit {
           this.appendPlotArea();
           this.appendNodeLabels();
               
-
+        
     } else if (this.update === true) {  this.updateElevationProfile() }
     
-    this.update = true;
+    this.update = true; // Make Update true 
 
   }  else { this.insertlabels() }
 
  }
 
  /**
+  * Method appends labels for the peak and the river
   * 
   * Enoch
   */
@@ -231,6 +251,12 @@ export class ProfileComponent implements OnInit {
     }
  }
 
+ /**
+  * Method will update the elevation profile by removing items with id or class on the svg item
+  * and then re-append the plot area and node labels.
+  * 
+  * Enoch
+  */
   private updateElevationProfile() {
 
       console.log("Updating Profile...");
@@ -253,6 +279,11 @@ export class ProfileComponent implements OnInit {
     
   }
 
+  /**
+   * Method serves the whole class by appending node labels wherever it is called from
+   * 
+   * Enoch
+   */
   private appendNodeLabels() {
 
     let xScale = this.xScale;
@@ -297,7 +328,13 @@ export class ProfileComponent implements OnInit {
 
   } // Append NodeLabels
 
-
+  /**
+   * Method serves the whole class by plotting the profile wherever it is called from.
+   * The profile consist of the area chart, and a line (stroked red) and 
+   * an hidden line chart used for mouse over
+   * 
+   * Enoch
+   */
   private appendPlotArea() {
 
     var newdata = this.lineData;
@@ -338,6 +375,18 @@ export class ProfileComponent implements OnInit {
         .transition();
   }
 
+
+  /**
+   * Mouse over event for displaying the XYZ, and marker on the leaflet map
+   * The leaflet map have been initialized as soon as the leaflet map component renders the map.
+   * 
+   * Enoch
+   * 
+   * @param e 
+   * @param map 
+   * @param hiddenEnter 
+   * @param newdata 
+   */
   private handleMouseOver(e, map, hiddenEnter, newdata) {
     
     let lmap:Map = map;
@@ -376,12 +425,17 @@ export class ProfileComponent implements OnInit {
       .attr("fill", "red")
        
   }
-
+  /**
+   * Method will Clear markers on the map and 
+   * remove the XYZ tips on the elevation profile chart on mouse out.
+   * 
+   * Enoch
+   * @param e 
+   */
   private handleMouseOut(e) {
+
     this.mouseEventsMarkers.clearLayers();
     this.svg.selectAll('#tips').remove();
   }
-
-
 
 } // Profile Class
