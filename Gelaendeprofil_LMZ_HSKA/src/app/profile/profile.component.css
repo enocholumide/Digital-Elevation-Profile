@@ -9,7 +9,7 @@
 
 #sidebar-container-fluid{
     position: fixed;
-    top:20px;
+    top:10px;
     width:auto;
     height: auto;
 }
@@ -45,7 +45,7 @@
     cursor:pointer;
     transition: all 0.4s ease-in-out;
     z-index:500;
-    box-shadow: 0 0 35px rgba(123, 123, 1234, 0.8); 
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8); 
 }
 
 .dropdown-menu-hide {
@@ -77,14 +77,10 @@
 
 .informationBlock{
     margin-left:50px;
-    height: 400px;
-    width: 800px;  
-    padding:5px;
+    height: auto;
+    width: 800px; 
     z-index:1;
-    box-shadow: 0 0 35px rgba(1236, 123, 1239, 0.8);
 }
-
-
 
 .active{
     background-color: #f45342;
@@ -103,10 +99,15 @@
   width: inherit;
   height: inherit;
   background-color: wheat; 
-
-  
 }
 
+#impressum, #legend{
+    background-color: white;
+}
+  
+.media {
+    padding:20px;
+}
 .d3-chart .axis path,
 .d3-chart .axis line {
   stroke: blue;
@@ -129,4 +130,39 @@
   fill: none;
   stroke: steelblue;
   stroke-width: 4.5px;
+}
+
+#stakeholders{
+    height:50%;
+    cursor: pointer;
+}
+
+#geomaticsGroup{
+    height:auto;
+    padding:10px; 
+}
+
+.fa-linkedin {
+    color:#0099CC;
+    float: right;
+}
+
+ .Legend{
+    margin-left:50px;
+    height: auto;
+    width: auto;
+    background-color: wheat;
+    padding:20px;
+    z-index:1;
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
+}
+.table td {
+    text-align: left;
+    padding: 5px;
+    line-height: 20px;}
+.td, .th {
+    display: table-cell;
+    vertical-align: inherit;}
+.table td {
+  vertical-align: middle;
 }
