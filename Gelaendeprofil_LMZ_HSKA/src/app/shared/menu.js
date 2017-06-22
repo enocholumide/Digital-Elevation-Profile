@@ -32,6 +32,8 @@ $(document).ready(function(){
   });
 
   $("#item01").click(function(){
+    $("#impressum").hide();
+    $("#legend").hide();
     var x = document.getElementById('informationBlock');
     if (x.style.display === 'none') {
         x.style.display = 'block';
@@ -40,8 +42,21 @@ $(document).ready(function(){
     }
   });
 
-  $("#item02").click(function(){
-    var x = document.getElementById('geological');
+    $("#item04").click(function(){
+    $("#impressum").hide();
+    $("#informationBlock").hide();
+    var x = document.getElementById('legend');
+    if (x.style.display === 'none') {
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+    }
+  });
+
+  $("#item05").click(function(){
+        $("#legend").hide();
+    $("#informationBlock").hide();
+    var x = document.getElementById('impressum');
     if (x.style.display === 'none') {
         x.style.display = 'block';
     } else {
