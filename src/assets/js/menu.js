@@ -1,35 +1,38 @@
 $(document).ready(function(){
 
-  $(".baseLayers").addClass("hide_layers");
-  $(".sidebar_menu").addClass("hide_menu");
-  $(".toggle_menu").addClass("opacity_one");
-  $(".dropdown-menu").show();
-  $(".informationBlock").hide();
+  //----------------INITIALIZE---------------------
 
-  $(".fa-chevron-circle-left").click(function(){
-    $(".sidebar_menu").addClass("hide_menu");
-    $(".toggle_menu").addClass("opacity_one");
-  });
+  $(".baseLayers").addClass("hide_layers"); // remove base layers
+  $(".dropdown-menu").show();     
+  $(".informationBlock").hide();
   
-  $(".toggle_menu").click(function(){
-    $(".sidebar_menu").removeClass("hide_menu");
-    $(".toggle_menu").removeClass("opacity_one");
-  });
-  
+  //----------------oooooooooo---------------------
+
+
+
+  //----------------SIDE BAR DIVS TOGGLE---------------------
 
   $(".sidebartoggle").click(function(){
     var x = document.getElementById('dropdown-menu');
     var a = document.getElementById('informationBlock');
+    var b = document.getElementById('geological');
+    var c = document.getElementById('moreInfo');
+    var d = document.getElementById('legend');
+    var e = document.getElementById('impressum');
     if (x.style.display === 'none') {
         x.style.display = 'block';
     } else {
         x.style.display = 'none';
-        a.style.display = 'none';    
+        a.style.display = 'none';
+        b.style.display = 'none';
+        c.style.display = 'none';
+        d.style.display = 'none';
+        e.style.display = 'none';          
     }
   });
 
   $("#item01").click(function(){
-    $("#impressum").hide();
+    $(".informationBlock").hide();
     var x = document.getElementById('informationBlock');
     if (x.style.display === 'none') {
         x.style.display = 'block';
@@ -38,8 +41,38 @@ $(document).ready(function(){
     }
   });
 
+  $("#item02").click(function(){
+    $(".informationBlock").hide();
+    var x = document.getElementById('geological');
+    if (x.style.display === 'none') {
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+    }
+  });
+
+  $("#item03").click(function(){
+    $(".informationBlock").hide();
+    var x = document.getElementById('moreInfo');
+    if (x.style.display === 'none') {
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+    }
+  });
+
+  $("#item04").click(function(){
+    $(".informationBlock").hide();
+    var x = document.getElementById('legend');
+    if (x.style.display === 'none') {
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+    }
+  });
+
   $("#item05").click(function(){
-    $("#informationBlock").hide();
+    $(".informationBlock").hide();
     var x = document.getElementById('impressum');
     if (x.style.display === 'none') {
         x.style.display = 'block';
@@ -48,9 +81,14 @@ $(document).ready(function(){
     }
   });
 
+  // Changes color on active element
   $('.dropdown-menu').on('click','li', function(){
    $(this).addClass('active').siblings().removeClass('active');
   });
+
+//-------------ooooooooooooooooooooooo----------------
+
+//---------------BASE MAPS SELECTORS------------------
   	   
 	  $(".layersToggle").click(function(){
 	    $(".baseLayers").removeClass("hide_layers");
@@ -67,8 +105,6 @@ $(document).ready(function(){
 	    $(".baseLayers").addClass("hide_layers");
 	  });
 
-
-
-
+//-------------ooooooooooooooooooooooo----------------
 
 });

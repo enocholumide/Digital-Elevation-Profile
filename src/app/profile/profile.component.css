@@ -101,7 +101,7 @@
   background-color: white; 
 }
 
-#impressum{
+#impressum, #legend, #geological, #moreInfo{
     background-color: white;
 }
   
@@ -149,4 +149,24 @@
 
 #nodeLabels{
     z-index: 50;
+}
+
+ .Legend{
+    margin-left:50px;
+    height: auto;
+    width: auto;
+    background-color: wheat;
+    padding:20px;
+    z-index:1;
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
+}
+.table td {
+    text-align: left;
+    padding: 5px;
+    line-height: 20px;}
+.td, .th {
+    display: table-cell;
+    vertical-align: inherit;}
+.table td {
+  vertical-align: middle;
 }
