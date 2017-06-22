@@ -1778,9 +1778,5 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
         return lowestIndex;
     }
 
-    exportMap():Map{
-      return this._map;
-    }
-
 } // Leaflet map class
 

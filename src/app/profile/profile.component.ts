@@ -126,7 +126,7 @@ export class ProfileComponent implements OnInit {
 
       this.yScale = d3Scale.scaleLinear()
           .domain([0, d3.max(this.lineData, function(d) { return d.y; })])
-          .range([this.height, 0]);
+          .range([this.height, 40]);
 
       this.xAxis = d3Axis.axisBottom(this.x).scale(this.xScale);
       this.yAxis = d3Axis.axisLeft(this.y).scale(this.yScale);
@@ -197,9 +197,11 @@ export class ProfileComponent implements OnInit {
           
         riverLabelsEnter.append("text")
           .text( (d: any) => (d.name) )
-          .attr("x", (d: any) => xScale(d.x) - 15 )
-          .attr("y", (d: any) => yScale(d.y) - 10 )
           .attr("id", "rivers")
+           .attr("transform", function(d){
+            var x = xScale(d.x);
+            var y = yScale(d.y - 10);
+            return "translate(" + x + "," + y + ") rotate(90)" })
           .attr("font_family", "sans-serif")
           .attr("font-size", "14px")
           .attr("fill", "darkblue");
@@ -225,9 +227,11 @@ export class ProfileComponent implements OnInit {
           
         peaksLabelsEnter.append("text")
           .text( (d: any) => (d.name) )
-          .attr("x", ( d: any) => xScale(d.x) - 15 )
-          .attr("y", ( d: any) => yScale(d.y) - 10 )
           .attr("id", "peaks")
+          .attr("transform", function(d){
+            var x = xScale(d.x);
+            var y = yScale(d.y) - 10;
+            return "translate(" + x + "," + y + ") rotate(-45)" })
           .attr("font_family", "sans-serif")
           .attr("font-size", "14px")
           .attr("fill", "purple");
@@ -287,14 +291,14 @@ export class ProfileComponent implements OnInit {
 
     labelsEnter
       .append("line")
-      .style("stroke", "darkblue")
+      .style("stroke", "darkgrey")
       .filter(function(d) { return d.x > 0 })
       .attr("id", "nodeLabels")
       .attr("x1", (d: any) => xScale(d.x) )
       .attr("x2", (d: any) => xScale(d.x) )
       .attr("y1", this.height )
       .style("stroke-dasharray", ("7, 7"))
-      .attr("y2", +20  );
+      .attr("y2", +30 );
 
   } // Append NodeLabels
 
@@ -329,13 +333,13 @@ export class ProfileComponent implements OnInit {
           .attr("x2", (d: any) => xScale(d.x) )   
           .attr("y1", this.height )  
           .attr("y2", (d: any) => yScale(d.y)  ) 
-          .on("mouseover", e => this.handleMouseOver(e, this.map))
-          .on("mouseout", e => this.handleMouseOut(e))
+          .on("mouseover", d => this.handleMouseOver(d, this.map))
+          .on("mouseout", d => this.handleMouseOut(d))
           .transition();
      
   }
 
-  private handleMouseOver(e, map) {
+  private handleMouseOver(d, map) {
 
     let lmap:Map = map;
     let markers:any;
@@ -346,8 +350,9 @@ export class ProfileComponent implements OnInit {
     let yellowSphereIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
                                     iconSize: [30,30],
                                     iconAnchor: [15,35]});
-    let marker = L.marker([e.geometry.lng, e.geometry.lat], {icon: yellowSphereIcon });
+    let marker = L.marker([d.geometry.lng, d.geometry.lat], {icon: yellowSphereIcon });
     this.mouseEventsMarkers.addLayer(marker);
+  
   }
 
   private handleMouseOut(e) {
