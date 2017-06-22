@@ -62,8 +62,7 @@ export class LeafletmapComponent implements OnInit {
   public totalLength:number;
   public totalVertix:number;
 
-  // BaseMap 
-  private providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];
+  // BaseMap Init
   private initMap = 4;
 
   // Elevation profile variables
@@ -95,70 +94,8 @@ export class LeafletmapComponent implements OnInit {
   public _map: Map;
   public coords = '...loading';
   public currentSelector:number;
-  public currentproviderDescription = this.providersDescription[this.initMap];
-  public providersImages = [ '../../assets/icons/satellitenbild.png',
-                              '../../assets/icons/relief_maps4free.png',
-                              '../../assets/icons/thunderforest_landscape.png',
-                              '../../assets/icons/esri_world_topomap.png',
-                              '../../assets/icons/openstreetmap_de.png',
-                            ]; 
-  public providers = [
-          
-          L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-              maxZoom: 20,
-              subdomains:['mt0','mt1','mt2','mt3']
-          }),
-
-          L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',{
-              maxZoom: 20,
-              subdomains:['mt0','mt1','mt2','mt3']
-          }),
-          
-          // Thunderforest Landscape
-          L.tileLayer('https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=ce1b82f48efd47b6bc58e40d7aeec1bb', {
-              maxZoom: 20,
-          }),
-
-          // ESRI World TopoMap
-          L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-              attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri',
-              maxZoom: 20,
-          }),
-          
-          // OpenStreetMap
-          L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              maxZoom: 20,
-              attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          }),
-
-
-          L.tileLayer('http://{s}.{base}.maps.cit.api.here.com/maptile/2.1/maptile/{mapID}/normal.day.grey/{z}/{x}/{y}/256/png8?app_id={app_id}&app_code={app_code}', {
-              attribution: 'Map &copy; 1987-2014 <a href="http://developer.here.com">HERE</a>',
-              subdomains: '1234',
-              mapID: 'newest',
-              app_id: 'Y8m9dK2brESDPGJPdrvs',
-              app_code: 'dq2MYIvjAotR8tHvY8Q_Dg',
-              base: 'base',
-              maxZoom: 20
-      }),
-
-          L.tileLayer('http://{s}.{base}.maps.cit.api.here.com/maptile/2.1/maptile/{mapID}/satellite.day/{z}/{x}/{y}/256/png8?app_id={app_id}&app_code={app_code}', {
-              attribution: 'Map &copy; 1987-2014 <a href="http://developer.here.com">HERE</a>',
-              subdomains: '1234',
-              mapID: 'newest',
-              app_id: 'Y8m9dK2brESDPGJPdrvs',
-              app_code: 'dq2MYIvjAotR8tHvY8Q_Dg',
-              base: 'aerial',
-              maxZoom: 20
-          }),
-
-          L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-              attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-              subdomains: 'abcd',
-              maxZoom: 19
-          }),
-      ];
-  public currentImage = this.providersImages[this.initMap];
+  public currentproviderDescription = this._mapService.providersDescription[this.initMap];
+  public currentImage =  this._mapService.providersImages[this.initMap];
 
   constructor
     ( 
@@ -204,7 +141,7 @@ export class LeafletmapComponent implements OnInit {
       this._map =  L.map('leaflet-map-component', { center: [49.00, 8.40],zoom: 12, zoomControl: false });
       
       // Add tile layer to Map
-      this.providers[this.initMap].addTo(this._map);
+      this._mapService.providers[this.initMap].addTo(this._map);
 
       // Events captured
       this._map.on('mousemove', this._onMouseMove, this);      
@@ -326,7 +263,7 @@ export class LeafletmapComponent implements OnInit {
                       }).bindTooltip(this.getMarkerLabel(i) , {interactive:true, permanent: true, direction: 'top', offset: [0, -5], });
           
           vertex["index"] = i;
-          console.log(vertex);
+          //console.log(vertex);
           
           this.drawnMajorNodes.addLayer(vertex);
 
@@ -367,9 +304,10 @@ export class LeafletmapComponent implements OnInit {
             let infoBox = document.createElement('a');
       infoBox.innerHTML = 
       `   <form id="edit_labels" role="form">
-                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">Edit label</span>
-                  <input id="edit_labels" type="text" class="form-control" placeholder="e.g Point A">     
-       `
+                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">bearbeiten</span>
+                  <input id="edit_labels" type="text" class="form-control" placeholder="z.B Berg A">     
+          </form>  
+      `
       for (let i = 0; i < elayers._layers[this.lineLeafletID]._latlngs.length; i++) {
           this.storedPoints_LatLng[i] = L.latLng (
                                           elayers._layers[this.lineLeafletID]._latlngs[i].lat, 
@@ -385,8 +323,7 @@ export class LeafletmapComponent implements OnInit {
                       }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
           
           vertex["index"] = i;
-          alert("vertex");
-          console.log(vertex);
+          //console.log(vertex);
 
           this.drawnMajorNodes.addLayer(vertex);
 
@@ -594,8 +531,6 @@ export class LeafletmapComponent implements OnInit {
 
       let temp = this._elevationRequest.getRequest(request).subscribe(  data => { this.sendElevationToProfile(data); },
                                                                         err => console.error(err));
-      console.log('%cService Elevation Data', 'background:red; color:white'); console.log(this.elevationData);
-
       this.getNearestPoints();
     }
 
@@ -641,7 +576,7 @@ export class LeafletmapComponent implements OnInit {
 
       this._emitterService.publishData(tempData);
 
-      console.log('%cLine Graph Data will be send to the profile component', 'background:purple; color:white'); console.log(tempData);
+      console.log('%cElevation data sent to profile component', 'background:purple; color:white'); //console.log(tempData);
       
     } // sendElevationToProfile
 
@@ -744,8 +679,7 @@ export class LeafletmapComponent implements OnInit {
         
         if (peak.elements.length > 0) {
 
-         
-        console.log ('%cRaw peak data: ' , 'background:black; color:white'); console.log(peak);
+        //console.log ('%cRaw peak data: ' , 'background:black; color:white'); console.log(peak);
 
         this.allPeaks = peak;
         let turfPoly = this.addTurfBufferToMap(buffered, false, 'blue');
@@ -983,7 +917,7 @@ export class LeafletmapComponent implements OnInit {
           allGroupedSort.push(groupedSortCloned);
       }
 
-      console.log ('%cInitial Item', 'color:white; background:blue'); console.log(allGroupedSort);
+      //console.log ('%cInitial Item', 'color:white; background:blue'); console.log(allGroupedSort);
       
       // Replace here:
       for (let i = 0; i < allGroupedSort.length; i++){
@@ -994,7 +928,7 @@ export class LeafletmapComponent implements OnInit {
           this.peaksCurrentData[insertingIndex + j] = JSON.parse(JSON.stringify(allGroupedSort[i][j]));
         }
       } 
-      console.log ('%cAfter Inserting Item', 'color:white; background:green'); console.log(this.peaksCurrentData);
+      //console.log ('%cAfter Inserting Item', 'color:white; background:green'); console.log(this.peaksCurrentData);
       
   } // If sameIndex.length is not === 0.
 
@@ -1034,7 +968,7 @@ export class LeafletmapComponent implements OnInit {
           sortedPeaksWithFeaturePoints.push(sorted[j]);
         }
     }
-    console.log('%cSorted Peaks with feature points', 'color:white; background:red'); console.log(sortedPeaksWithFeaturePoints);
+    //console.log('%cSorted Peaks with feature points', 'color:white; background:red'); console.log(sortedPeaksWithFeaturePoints);
 
     // 5.3 Compute accu. distances of all points starting from point A
     let n = sortedPeaksWithFeaturePoints.length;
@@ -1063,6 +997,7 @@ export class LeafletmapComponent implements OnInit {
     let peakData = {peak:[]};
     peakData.peak = temp;
     this._emitterService.publishData(peakData);
+    console.log('%cPeak data sent to profile component', 'background:purple; color:white');
     
 } // Process Peaks
 
@@ -1082,7 +1017,7 @@ export class LeafletmapComponent implements OnInit {
     if (!(river.elements.length === 0)) {
 
 
-      console.log ('%cRaw river data: ' , 'background:green; color:white'); console.log(river);
+      //console.log ('%cRaw river data: ' , 'background:green; color:white'); console.log(river);
       
       let eachRiver = [];
       let turfRiverLines = []; 
@@ -1120,7 +1055,7 @@ export class LeafletmapComponent implements OnInit {
         featureTurfPoints[i] = point.geometry.coordinates;
       }
       let featureTurfLine = turf.lineString(featureTurfPoints);
-      console.log(featureTurfLine);
+      //console.log(featureTurfLine);
       let riversIntersectedPoints = [];
       for (let i = 0; i < eachRiver.length; i++){
           let riverTurfLine = turf.lineString(turfRiverLines[i]);
@@ -1210,84 +1145,59 @@ export class LeafletmapComponent implements OnInit {
 
         // Remove feature nodes
         let sortedRiverPoints = sortedRiversWithFeaturePoints.filter(a => !(a.vertex));
-        // Compute final data
-        /** 
-        this.riverGraphData = [];
-        for (let i = 0; i < sortedRiverPoints.length; i++) {
-          this.riverGraphData[i] = {x:sortedRiverPoints[i].distance|0, y:0, name:sortedRiverPoints[i].name, geometry:sortedRiverPoints[i].geometry}
-        }
-        */
-
-
-//console.log(this.peaksCurrentData, this.peaksCurrentData.length);
         
-        let allPoints = [];
-        for (let i = 0; i < sortedRiverPoints.length; i++) {
-          allPoints.push(sortedRiverPoints[i].geometry);
-        }
+        // Interpolate heights
+        if (!(sortedRiverPoints.length === 0)) {
 
-        if (!(allPoints.length === 0)) {
-          let request = this.formatToGoogleElevationRequest(allPoints, this.GOOGLE_API_KEY);  
-          this._elevationRequest.getRequest(request)
-          .subscribe(  data =>{ this.sendRiversToProfile(data, sortedRiverPoints) },
-          err => console.error(err));
+            let temp = [];
+            for (let i = 0; i < sortedRiverPoints.length; i++) {
+              
+              let c = [];
+              let ppPoint = sortedRiverPoints[i].geometry;
+              let index = this.getLowestIndex(ppPoint);
+
+              //-----------------------------------------
+
+              if(index === 0) {
+                c = [0 , 1];
+              } else if (index === this.featureVertices.length - 1) {c = [-1, 0] }
+              else {
+                let distanceForward = ppPoint.distanceTo(this.featureVertices[index+1]);
+                let distanceBack = ppPoint.distanceTo(this.featureVertices[index-1]);
+                
+                if (distanceForward > distanceBack) {
+                            c = [-1, 0];
+                } else {
+                    c = [0 , 1];
+                }
+              }
+             
+              //-----------------------------------------
+              let node1 = L.latLng( this.elevationData.results[index+c[0]].location.lat, 
+                                    this.elevationData.results[index+c[0]].location.lng, 
+                                    this.elevationData.results[index+c[0]].elevation);
+
+              let node2 = L.latLng( this.elevationData.results[index+c[1]].location.lat, 
+                                    this.elevationData.results[index+c[1]].location.lng, 
+                                    this.elevationData.results[index+c[1]].elevation);
+              //-----------------------------------------
+              let interpolatedHeight = this.interpolateHeight(ppPoint, node1, node2 );
+              //-----------------------------------------
+       
+              temp[i] = { x:sortedRiverPoints[i].distance|0, y:interpolatedHeight|0, name:sortedRiverPoints[i].name };
+            
+            }
+
+            //-------------PUBLISH DATA----------------
+            let riverData = {river:temp};
+            this._emitterService.publishData(riverData);
+            console.log('%cRiver data sent to profile component', 'background:purple; color:white');
+            //-------------ooooooooooooo---------------
         }
       }
     } else { console.log ('%cNo River(s) Found: ' , 'background:red; color:white') }
-    
-    console.log ('%cINFO ' , 'background:blue; color:white'); console.log(this.riverGraphData);
-    //this.onfinish();
 
   } // Process Rivers
-
-
-/**
- * 
- * 
- * Enoch
- * @param data 
- * @param sortedRiverPoints 
- */
-sendRiversToProfile(data, sortedRiverPoints){
-
-  let temp = [];
-  for (let i = 0; i < data.results.length; i++) {
-    
-    let c = [];
-    let ppPoint = sortedRiverPoints[i].geometry;
-    let index = this.getLowestIndex(ppPoint);
-    let googleHeight = data.results[i].elevation;
-
-    if(index === 0) {
-      c = [0 , 1];
-    } else if (index === this.featureVertices.length - 1) {c = [-1, 0] }
-    else {
-      let distanceForward = ppPoint.distanceTo(this.featureVertices[index+1]);
-      let distanceBack = ppPoint.distanceTo(this.featureVertices[index-1]);
-      
-      if (distanceForward > distanceBack) {
-                  c = [-1, 0];
-      } else {
-          c = [0 , 1];
-      }
-  }
-    
-    //-----------------------------------------
-    let node1 = L.latLng(this.elevationData.results[index+c[0]].location.lat, this.elevationData.results[index+c[0]].location.lng, this.elevationData.results[index+c[0]].elevation);
-    let node2 = L.latLng(this.elevationData.results[index+c[1]].location.lat, this.elevationData.results[index+c[1]].location.lng, this.elevationData.results[index+c[1]].elevation);
-    //-----------------------------------------
-    let interpolatedHeight = this.interpolateHeight(ppPoint, node1, node2 );
-    //-----------------------------------------
-    
-    temp[i] = { x:sortedRiverPoints[i].distance|0, y:interpolatedHeight|0, name:sortedRiverPoints[i].name };
-  
-  }
-    let riverData = {river:[]};
-    riverData.river = temp;
-    this._emitterService.publishData(riverData);
-
-}
-
 
    public _searchedLocation (): void {
 
@@ -1297,32 +1207,36 @@ sendRiversToProfile(data, sortedRiverPoints){
                           panToPoint: true,
                           fullwidth: true,
                           expanded: false,
-                          focus: true,                        // search nearby
+                          focus: true,                       
                           placeholder: 'Suche Stadt:',
                           markers: false,
-                          params: {layers: 'locality'}                     // disable MAPZEN markers we just need the details from MAPZEN
+                          params: {layers: 'locality'}
                         }).addTo(this._map);
 
-    
     geocoder.on('select', this._geocoderMenu, this);
         
   } // _searchedLocation
 
-   // method called from the html template on select of icons on the map
-   private _changeBasemapLayer(selector: number) {
+/**
+* Method called from the html template on select of icons on the map
+*
+* Enoch
+* @param selector 
+*/
+private _changeBasemapLayer(selector: number) {
 
-      // remove all previous basemap
-      for (let i = 0; i < this.providers.length; i++) {
-        this._map.removeLayer(this.providers[i]); 
-      }
+  // remove all previous basemaps
+  for (let i = 0; i < this._mapService.providers.length; i++) {
+    this._map.removeLayer(this._mapService.providers[i]); 
+  }
 
-      // proceed to add basemap selected by user, change icon image and label of the icon toggle
-       this.providers[selector].addTo(this._map);
-       this.currentImage = this.providersImages[selector];
-       this.currentproviderDescription = this.providersDescription[selector];
-       this.currentSelector= selector;
-       
-    } // _changeBasemapLayer
+  // proceed to add basemap selected by user, change icon image and label of the icon toggle
+    this._mapService.providers[selector].addTo(this._map);
+    this.currentImage = this._mapService.providersImages[selector];
+    this.currentproviderDescription = this._mapService.providersDescription[selector];
+    this.currentSelector= selector;
+    
+} // _changeBasemapLayer
 
 protected _geocoderMenu(e):void {
   let _lat = Number(e.latlng.lat);
@@ -1621,7 +1535,7 @@ public sortPeaksWithSameIndex(data:Array<any>):Array<any>{
 }
 
 public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
-  console.log('Each Feature Parts');
+  //console.log('Each Feature Parts');
 
   let featurePart = JSON.parse(JSON.stringify(this.fullSinglePart[partNo]));
 
@@ -1755,10 +1669,11 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
     }
 
     /**
-     * Get the shortest point on the feature vertice
-     * @param point 
+     * Get the shortest distance from a point to a node on the feature vertix
+     * Enoch
+     * @param point Any Point in L.LatLng
      */
-    public getLowestIndex(point:L.LatLng):number {
+  public getLowestIndex(point:L.LatLng):number {
         let lowestIndex = 0;
         let lowestValue = 0;
         let distArray = [];

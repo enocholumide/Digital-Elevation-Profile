@@ -64,21 +64,12 @@ export class ProfileComponent implements OnInit {
     this.height = 400 - this.margin.top - this.margin.bottom;
 
     this._emitterService.case$.subscribe( newdata => this.switch(newdata) );
-    //this._emitterService.caseRiverandPeak$.subscribe(newdata => this.peaksAndRivers(newdata));
-  }
- 
-  peaksAndRivers(newdata) {
-
-    alert("HERE");
-    console.log(newdata.peak);
 
   }
 
   switch(newdata) {
     if (newdata.hasOwnProperty("leafletmap")) {
       this.map = newdata;
-      console.log("Leaflet Map");
-      console.log(this.map);
     } else { this.lineData = newdata; this.createElevationProfile() }
   }
 
@@ -97,11 +88,10 @@ export class ProfileComponent implements OnInit {
 
   private createElevationProfile(){
 
-    console.log('BASE MAP');
-    console.log(this.map);
-    
-    if ( (this.lineData.hasOwnProperty("editedLabel")) ) { 
-        
+    if ( (this.lineData.hasOwnProperty("editedLabel")) ) {
+
+      console.log("Label Edited...");
+
       this.svg.selectAll('#nodeLabels').remove();
       let newLabel:any = this.lineData;
       this.nodeLabel[newLabel.index].name = newLabel.editedLabel;
@@ -147,7 +137,9 @@ export class ProfileComponent implements OnInit {
 
       
       if (this.update === false) {
-           
+
+          console.log("Drawing Profile...");
+
           this.svg.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + this.height + ")")
@@ -179,7 +171,7 @@ export class ProfileComponent implements OnInit {
     var yScale = this.yScale;
   
     if ( this.lineData.hasOwnProperty("river") ) {
-
+      
       // -------------------------------------------
       this.riverData = this.lineData;
       let river:Array<any> = this.riverData.river;
@@ -241,7 +233,7 @@ export class ProfileComponent implements OnInit {
 
   private updateElevationProfile() {
 
-    console.log("Update");
+      console.log("Updating Profile...");
 
       let updateLine = this.svg.selectAll('.line').remove();
       let updateArea = this.svg.selectAll('.area').remove();
@@ -266,7 +258,7 @@ export class ProfileComponent implements OnInit {
     let xScale = this.xScale;
     let yScale = this.yScale;
 
-    console.log(this.nodeLabel);
+    //console.log(this.nodeLabel);
 
     let labels = this.svg.selectAll("g nodeTexts")
                 .data(this.nodeLabel)
