@@ -147,11 +147,6 @@
     float: right;
 }
 
-path.area {
-    fill: lightsteelblue;
-    stroke-width: 0;
-}
-
 #nodeLabels{
     z-index: 50;
 }

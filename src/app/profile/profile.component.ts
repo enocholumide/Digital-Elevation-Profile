@@ -1,5 +1,6 @@
-import { Component, OnInit, OnChanges } from '@angular/core';
+import { Component, OnInit, OnChanges, ViewChild } from '@angular/core';
 import { EmitterService } from '../shared/emitter.service';
+import { MapService } from '../shared/map.service';
 
 import * as d3 from 'd3'; 'd3-selection';
 import * as d3Scale from "d3-scale";
@@ -7,16 +8,22 @@ import * as d3Shape from "d3-shape";
 import * as d3Array from "d3-array";
 import * as d3Axis from "d3-axis";
 
+
+import * as L from 'leaflet';
+import { Map } from 'leaflet';
+
 import {Selection, select } from 'd3-selection';
 import {transition} from 'd3-transition';
 
+import { LeafletmapComponent } from '../leafletmap/leafletmap.component';
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css']
-  
+  styleUrls: ['./profile.component.css'],
+  providers: [ MapService ]
 })
+
 export class ProfileComponent implements OnInit {
 
   private margin = {top: 50, right: 40, bottom: 50, left: 40};
@@ -42,16 +49,19 @@ export class ProfileComponent implements OnInit {
   private yScale: any;
   private update;
   
+  public mouseEventsMarkers:L.FeatureGroup;
 
   private chart: any;
 
   private counter = 0;
 
-  constructor(private _emitterService: EmitterService) {
+  private map: Map;
+  private map2;
+
+  
+  constructor(private _emitterService: EmitterService, private _mapService: MapService,) {
     this.width = 800 - this.margin.left - this.margin.right ;
     this.height = 400 - this.margin.top - this.margin.bottom;
-
-      
 
     this._emitterService.case$.subscribe( newdata => this.switch(newdata) );
     //this._emitterService.caseRiverandPeak$.subscribe(newdata => this.peaksAndRivers(newdata));
@@ -62,17 +72,22 @@ export class ProfileComponent implements OnInit {
     alert("HERE");
     console.log(newdata.peak);
 
-    
-    
   }
 
-  switch(newdata) { this.lineData = newdata; this.createElevationProfile() }
+  switch(newdata) {
+    if (newdata.hasOwnProperty("leafletmap")) {
+      this.map = newdata;
+      console.log("Leaflet Map");
+      console.log(this.map);
+    } else { this.lineData = newdata; this.createElevationProfile() }
+  }
 
   ngOnInit() {
     this.update = false;
-    this.lineData = [];    
+    this.lineData = [];   
     this.initSvg();
   }
+ 
 
    private initSvg() {
     this.svg = d3.select("svg")
@@ -81,6 +96,9 @@ export class ProfileComponent implements OnInit {
   }
 
   private createElevationProfile(){
+
+    console.log('BASE MAP');
+    console.log(this.map);
     
     if ( (this.lineData.hasOwnProperty("editedLabel")) ) { 
         
@@ -123,35 +141,23 @@ export class ProfileComponent implements OnInit {
           .y1(function(d:any) { return yScale(d.y); });
 
       this.line = d3Shape.line()
-                          .curve(d3.curveMonotoneX)
-                          .x( (d: any) => xScale(d.x) )
-                          .y( (d: any) => yScale(d.y) )
-                          ;
+          .curve(d3.curveMonotoneX)
+          .x( (d: any) => xScale(d.x) )
+          .y( (d: any) => yScale(d.y) );
 
-      if (this.update === false) {
       
-          this.svg.append("path")
-              .datum(this.lineData)
-              .attr("class", "area")
-              .attr("d", this.area)
-
-          this.svg.append("path")
-              .datum(this.lineData)
-              .attr("class", "line")
-              .attr("d", this.line)
-              .attr('stroke','red')
-              .attr("fill", "none")
-              ;
-                  
+      if (this.update === false) {
+           
           this.svg.append("g")
-                  .attr("class", "x axis")
-                  .attr("transform", "translate(0," + this.height + ")")
-                  .call(this.xAxis);
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + this.height + ")")
+              .call(this.xAxis);
 
           this.svg.append("g")
               .attr("class", "y axis")
               .call(this.yAxis);
 
+          this.appendPlotArea();
           this.appendNodeLabels();
               
 
@@ -227,9 +233,7 @@ export class ProfileComponent implements OnInit {
           .attr("fill", "purple");
       }
     }
-
  }
-
 
   private updateElevationProfile() {
 
@@ -240,19 +244,9 @@ export class ProfileComponent implements OnInit {
       this.svg.selectAll('#peaks').remove();
       this.svg.selectAll('#rivers').remove();
       this.svg.selectAll('#nodeLabels').remove();
+      this.svg.selectAll('#hiddenTicks').remove();
  
-      this.svg.append("path")
-          .datum(this.lineData)
-          .attr("class", "line")
-          .attr("d", this.line)
-          .attr('stroke','red')
-          .attr("fill", "none");
-
-      this.svg.append("path")
-          .datum(this.lineData)
-          .attr("class", "area")
-          .attr("d", this.area);
-
+      this.appendPlotArea();
       this.appendNodeLabels();         
 
       this.svg.selectAll("g .y.axis").transition()
@@ -265,30 +259,101 @@ export class ProfileComponent implements OnInit {
 
   private appendNodeLabels() {
 
-    var xScale = this.xScale;
-    var yScale = this.yScale;
+    let xScale = this.xScale;
+    let yScale = this.yScale;
 
-    var labels = this.svg.selectAll("g nodeTexts")
+    console.log(this.nodeLabel);
+
+    let labels = this.svg.selectAll("g nodeTexts")
                 .data(this.nodeLabel)
             
-            var labelsEnter = labels.enter()
-              .append("g")
-              
-            var circle = labelsEnter.append("circle")
-              .attr("id", "nodeLabels")
-              .attr("r", 20)
-              .attr('cx', function(d:any) { return xScale(d.x); })
-              .attr("fill", "red")
+    let labelsEnter = labels.enter()
+      .append("g")
+      
+    let circle = labelsEnter.append("circle")
+      .attr("id", "nodeLabels")
+      .attr("r", 20)
+      .attr('cx', function(d:any) { return xScale(d.x); })
+      .attr("fill", "red");
 
-              labelsEnter
-              .append("text")
-              .attr("id", "nodeLabels")
-              .attr('dx', function(d:any) { return xScale(d.x); })
-              .attr('dy', 20/4)
-              .attr("text-anchor", "middle")
-              .text(function(d){return d.name})
-              .attr("stroke", "white")
+    labelsEnter
+      .append("text")
+      .attr("id", "nodeLabels")
+      .attr('dx', function(d:any) { return xScale(d.x); })
+      .attr('dy', 20/4)
+      .attr("text-anchor", "middle")
+      .text(function(d){return d.name})
+      .attr("stroke", "white");
+
+    labelsEnter
+      .append("line")
+      .style("stroke", "darkblue")
+      .filter(function(d) { return d.x > 0 })
+      .attr("id", "nodeLabels")
+      .attr("x1", (d: any) => xScale(d.x) )
+      .attr("x2", (d: any) => xScale(d.x) )
+      .attr("y1", this.height )
+      .style("stroke-dasharray", ("7, 7"))
+      .attr("y2", +20  );
 
   } // Append NodeLabels
+
+
+  private appendPlotArea() {
+
+      let xScale = this.xScale;
+      let yScale = this.yScale;
+
+      this.svg.append("path")
+          .datum(this.lineData)
+          .attr("class", "line")
+          .attr("d", this.line)
+          .attr('stroke','red')
+          .attr("fill", "none");
+
+      this.svg.append("path")
+          .datum(this.lineData)
+          .attr("class", "area")
+          .attr("d", this.area)
+          .attr("fill", "lightsteelblue");
+
+      let hidden = this.svg.selectAll("g hiddenTicks")
+          .data(this.lineData);
+      let hiddenEnter = hidden.enter()
+          .append("g");
+
+      let circle = hiddenEnter.append("line")
+          .style("stroke", "lightsteelblue")
+          .attr("id", "hiddenTicks")
+          .attr("x1", (d: any) => xScale(d.x) )
+          .attr("x2", (d: any) => xScale(d.x) )   
+          .attr("y1", this.height )  
+          .attr("y2", (d: any) => yScale(d.y)  ) 
+          .on("mouseover", e => this.handleMouseOver(e, this.map))
+          .on("mouseout", e => this.handleMouseOut(e))
+          .transition();
+     
+  }
+
+  private handleMouseOver(e, map) {
+
+    let lmap:Map = map;
+    let markers:any;
+
+    this.mouseEventsMarkers = new L.FeatureGroup(markers);
+    lmap.addLayer(this.mouseEventsMarkers);
+
+    let yellowSphereIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
+                                    iconSize: [30,30],
+                                    iconAnchor: [15,35]});
+    let marker = L.marker([e.geometry.lng, e.geometry.lat], {icon: yellowSphereIcon });
+    this.mouseEventsMarkers.addLayer(marker);
+  }
+
+  private handleMouseOut(e) {
+    this.mouseEventsMarkers.clearLayers();
+  }
+
+
 
 } // Profile Class

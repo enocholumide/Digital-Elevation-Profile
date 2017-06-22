@@ -4,6 +4,7 @@ import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { GeneralHttpService } from '../shared/general-http.service';
 import { EmitterService } from '../shared/emitter.service';
+import { MapService } from '../shared/map.service';
 
 import * as $ from 'jquery';
 
@@ -28,7 +29,7 @@ import * as lineIntersect from '@turf/line-intersect';
   selector: 'app-leafletmap',
   templateUrl: './leafletmap.component.html',
   styleUrls: ['./leafletmap.component.css'],
-  providers: [GeneralHttpService]
+  providers: [GeneralHttpService, MapService]
 })
 
 
@@ -165,6 +166,7 @@ export class LeafletmapComponent implements OnInit {
     private _elevationRequest: GeneralHttpService,
     private _pointsOfInterestRequest: GeneralHttpService,
     private _emitterService: EmitterService,
+    private _mapService: MapService,
     ) { }
 
   @HostListener('document:click', ['$event']) onClick(e) {
@@ -198,6 +200,7 @@ export class LeafletmapComponent implements OnInit {
   ngOnInit() {
       
       // Initialize leaflet map and center at karlsruhe
+
       this._map =  L.map('leaflet-map-component', { center: [49.00, 8.40],zoom: 12, zoomControl: false });
       
       // Add tile layer to Map
@@ -246,6 +249,13 @@ export class LeafletmapComponent implements OnInit {
       this._map.addLayer(this.drawnMajorNodes);
       
       //TODO: Create Separate layer for peaks shown on the map
+      
+      this._map["leafletmap"] = "leafletmap";
+      this._mapService.map = this._map;
+
+      console.log(this._mapService.map);
+
+      this._emitterService.publishData(this._mapService.map);
 
       this._searchedLocation();
       
@@ -453,7 +463,7 @@ export class LeafletmapComponent implements OnInit {
     */
     public _getAllVertix() {
 
-      const MAXVERTIX = 20;
+      const MAXVERTIX = 200;
 
       this.totalLength = 0;           // 1.
       let partLength = [];            // 2.
@@ -541,7 +551,7 @@ export class LeafletmapComponent implements OnInit {
                       icon: this.greySphereIcon,
                       title: tempArray[j].lat + ' ' + tempArray[j].lng
             });
-            this.drawnMarkers.addLayer(vertex);
+            //this.drawnMarkers.addLayer(vertex);
             featurePoints.push(tempArray[j]);
 
         }
@@ -607,7 +617,12 @@ export class LeafletmapComponent implements OnInit {
       let tempData:Array<any> = [];
       let forNode = false;
       for (let i = 0; i < n; i++) {
-        if (i === 0){ tempData[0] = {x: sumLength|0, y:(elevation.results[i].elevation)|0, name:this.getMarkerLabel(0), node:"Y"}};
+        if (i === 0){ tempData[0] = { x: sumLength|0, 
+                                      y:(elevation.results[i].elevation)|0, 
+                                      name:this.getMarkerLabel(0), 
+                                      node:"Y",
+                                      geometry: L.latLng(elevation.results[i].location.lng, elevation.results[i].location.lat, elevation.results[i].elevation )
+                                    }};
         if (i > 0) {
           let fromPoint = turf.point([elevation.results[i-1].location.lng, elevation.results[i-1].location.lat]);
           let toPoint = turf.point([elevation.results[i].location.lng, elevation.results[i].location.lat]);
@@ -615,7 +630,12 @@ export class LeafletmapComponent implements OnInit {
             if (i === this.majorNodeIndex[j]){ label = this.getMarkerLabel(j); forNode = true }
           }
           let temp = turf.distance(fromPoint, toPoint, 'meters'); sumLength = sumLength + temp;
-          tempData.push({x: sumLength|0, y:(elevation.results[i].elevation)|0, name:label, node: forNode ? "Y" : "N"});
+          tempData.push({ x: sumLength|0, 
+                          y:(elevation.results[i].elevation)|0, 
+                          name:label, 
+                          node: forNode ? "Y" : "N",
+                          geometry: L.latLng(elevation.results[i].location.lng, elevation.results[i].location.lat, elevation.results[i].elevation )
+                        });
         }
       }
 
@@ -1756,6 +1776,10 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
             }
         }
         return lowestIndex;
+    }
+
+    exportMap():Map{
+      return this._map;
     }
 
 } // Leaflet map class
