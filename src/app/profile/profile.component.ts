@@ -171,7 +171,7 @@ export class ProfileComponent implements OnInit {
     var yScale = this.yScale;
   
     if ( this.lineData.hasOwnProperty("river") ) {
-      
+
       // -------------------------------------------
       this.riverData = this.lineData;
       let river:Array<any> = this.riverData.river;
@@ -267,6 +267,7 @@ export class ProfileComponent implements OnInit {
       .append("g")
       
     let circle = labelsEnter.append("circle")
+      .transition().delay(250)
       .attr("id", "nodeLabels")
       .attr("r", 20)
       .attr('cx', function(d:any) { return xScale(d.x); })
@@ -274,6 +275,7 @@ export class ProfileComponent implements OnInit {
 
     labelsEnter
       .append("text")
+      .transition().delay(250)
       .attr("id", "nodeLabels")
       .attr('dx', function(d:any) { return xScale(d.x); })
       .attr('dy', 20/4)
@@ -283,6 +285,7 @@ export class ProfileComponent implements OnInit {
 
     labelsEnter
       .append("line")
+      .transition().delay(250)
       .style("stroke", "darkgrey")
       .filter(function(d) { return d.x > 0 })
       .attr("id", "nodeLabels")
@@ -297,44 +300,51 @@ export class ProfileComponent implements OnInit {
 
   private appendPlotArea() {
 
-      let xScale = this.xScale;
-      let yScale = this.yScale;
+    var newdata = this.lineData;
+    let xScale = this.xScale;
+    let yScale = this.yScale;
 
-      this.svg.append("path")
-          .datum(this.lineData)
-          .attr("class", "line")
-          .attr("d", this.line)
-          .attr('stroke','red')
-          .attr("fill", "none");
+    this.svg.append("path")
+        .datum(this.lineData)
+        .attr("class", "line")
+        .attr("d", this.line)
+        .attr('stroke','red')
+        .attr("fill", "none");
+        
+    this.svg.append("path")
+        .datum(this.lineData)
+        .attr("class", "area")
+        .attr("d", this.area)
+        .attr("fill", "lightsteelblue")
+        
+    let hidden = this.svg.selectAll("g hiddenTicks")
+        .data(this.lineData);
+    let hiddenEnter = hidden.enter()
+        .append("g");
 
-      this.svg.append("path")
-          .datum(this.lineData)
-          .attr("class", "area")
-          .attr("d", this.area)
-          .attr("fill", "lightsteelblue");
+    let circle = hiddenEnter.append("line")
+        .style("stroke", "lightsteelblue")
+        .attr("id", "hiddenTicks")
+        .attr("x1", (d: any) => xScale(d.x) )
+        .attr("x2", (d: any) => xScale(d.x) )   
+        .attr("y1", this.height )  
+        .attr("y2", (d: any) => yScale(d.y)  ) 
+        .on("mouseover", d =>
 
-      let hidden = this.svg.selectAll("g hiddenTicks")
-          .data(this.lineData);
-      let hiddenEnter = hidden.enter()
-          .append("g");
-
-      let circle = hiddenEnter.append("line")
-          .style("stroke", "lightsteelblue")
-          .attr("id", "hiddenTicks")
-          .attr("x1", (d: any) => xScale(d.x) )
-          .attr("x2", (d: any) => xScale(d.x) )   
-          .attr("y1", this.height )  
-          .attr("y2", (d: any) => yScale(d.y)  ) 
-          .on("mouseover", d => this.handleMouseOver(d, this.map))
-          .on("mouseout", d => this.handleMouseOut(d))
-          .transition();
-     
+        this.handleMouseOver(d, this.map, hiddenEnter, newdata)
+        
+        )
+        .on("mouseout", d => this.handleMouseOut(d))
+        .transition();
   }
 
-  private handleMouseOver(d, map) {
-
+  private handleMouseOver(e, map, hiddenEnter, newdata) {
+    
     let lmap:Map = map;
     let markers:any;
+
+    var xScale = this.xScale;                    
+    var yScale = this.yScale;
 
     this.mouseEventsMarkers = new L.FeatureGroup(markers);
     lmap.addLayer(this.mouseEventsMarkers);
@@ -342,13 +352,34 @@ export class ProfileComponent implements OnInit {
     let yellowSphereIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
                                     iconSize: [30,30],
                                     iconAnchor: [15,35]});
-    let marker = L.marker([d.geometry.lng, d.geometry.lat], {icon: yellowSphereIcon });
+    let marker = L.marker([e.geometry.lng, e.geometry.lat], {icon: yellowSphereIcon });
     this.mouseEventsMarkers.addLayer(marker);
-  
+
+    let lng = Math.round(e.geometry.lng * 100) / 100;
+    let lat = Math.round(e.geometry.lat * 100) / 100;
+    let alt = e.geometry.alt|0;
+
+    this.svg.append("g")
+      .append("text")
+      .attr("id", "tips")
+      .attr('dx', xScale(e.x))
+      .attr('dy', yScale(e.y)-10)
+      .attr("text-anchor", "middle")
+      .text("X: " + lng + " | " + "Y: " + lat + " | " + "Z: " + alt+"m");
+
+    this.svg.append("g")
+      .append("circle")
+      .attr("r", 3)
+      .attr('cx', xScale(e.x))
+      .attr('cy', yScale(e.y))
+      .attr("id", "tips")
+      .attr("fill", "red")
+       
   }
 
   private handleMouseOut(e) {
     this.mouseEventsMarkers.clearLayers();
+    this.svg.selectAll('#tips').remove();
   }
 
 

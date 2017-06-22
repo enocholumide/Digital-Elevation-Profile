@@ -1,8 +1,6 @@
 // NOTE!!
 // Edited Version to limit polyline draw to max of 6
 
-
-
 /*
  Leaflet.draw 0.4.9, a plugin that adds drawing and editing tools to Leaflet powered maps.
  (c) 2012-2017, Jacob Toye, Jon West, Smartrak, Leaflet
@@ -18,7 +16,7 @@ L.drawVersion = "0.4.9";
  * @class L.Draw
  * @aka Draw
  *
- *
+ * 
  * To add the draw toolbar set the option drawControl: true in the map options.
  *
  * @example
@@ -90,22 +88,22 @@ L.drawLocal = {
 			// ex: actions.undo  or actions.cancel
 			actions: {
 				title: 'Zeichnen abbrechen',
-				text: 'abbrechen'
+				text: 'Abbrechen'
 			},
 			finish: {
-				title: 'Zeichnen beenden',
-				text: 'beenden'
+				title: 'Finish drawing',
+				text: 'Beenden'
 			},
 			undo: {
-				title: 'Lösche letzten gesetzten Punkt',
-				text: 'lösche letzten Punkt'
+				title: 'Delete last point drawn',
+				text: 'Lösche letzten Punkt'
 			},
 			buttons: {
-				polyline: 'Zeichne ein Polylinie',
-				polygon: 'Zeichne ein Polygon',
-				rectangle: 'Zeichne ein Rechteck',
-				circle: 'Zeichne einen Kreis',
-				marker: 'Zeichne einen Marker'
+				polyline: 'Zeichne eine Polylinie',
+				polygon: 'Draw a polygon',
+				rectangle: 'Draw a rectangle',
+				circle: 'Draw a circle',
+				marker: 'Draw a marker'
 			}
 		},
 		handlers: {
@@ -128,23 +126,23 @@ L.drawLocal = {
 				}
 			},
 			polyline: {
-				error: '<strong>Error:</strong> Linienzug darf sich nicht überschneiden!',
+				error: '<strong>Error:</strong> Linie darf sich nicht schneiden!',
 				tooltip: {
-					start: 'Start zeichnen:  Klick.',
-					cont: 'Weiter zeichnen: Klick.',
-					end: 'Zeichnen beednen: Klick letzter Punkt.',
+					start: 'Klick, um Zeichnen zu starten.',
+					cont: 'Klick, um weiter zu zeichnen.',
+					end: 'Klick letzten Punkt, um Zeichnen zu beenden.',
 					// Inserted@Enoch
-                    max: 'Maximale Anzahl an Punkten (6) erreicht.'
+                    max: 'Maximale Anzahl von Punkten (6) erreicht.'
 				}
 			},
 			rectangle: {
 				tooltip: {
-					start: 'Start zeichnen:  Klick.'
+					start: 'Click and drag to draw rectangle.'
 				}
 			},
 			simpleshape: {
 				tooltip: {
-					end: 'Zeichnen beenden: Maus los lassen.'
+					end: 'Release mouse to finish drawing.'
 				}
 			}
 		}
@@ -153,31 +151,33 @@ L.drawLocal = {
 		toolbar: {
 			actions: {
 				save: {
-					title: 'Änderungen speichern.',
-					text: 'speichern'
+					title: 'Save changes.',
+					text: 'speichern.',
+					id: 'saveChanges'
 				},
 				cancel: {
-					title: 'Bearbeitung abbrechen, Änderungen verwerfen.',
-					text: 'abbrechen'
+					title: 'Cancel editing, discards all changes.',
+					text: 'abbrechen',
+					id: 'cancelDelete'
 				}
 			},
 			buttons: {
-				edit: 'Layer bearbeiten.',
+				edit: 'Bearbeite Layer.',
 				editDisabled: 'Kein Layer vorhanden.',
-				remove: 'Layer löschens.',
+				remove: 'Lösche Layer.',
 				removeDisabled: 'Kein Layer vorhanden.'
 			}
 		},
 		handlers: {
 			edit: {
 				tooltip: {
-					text: 'Ziehe Punkt, oder klick auf Punkt zum Bearbeiten.',
-					subtext: 'Um Änderungen zu verwerfen, klick abbrechen.'
+					text: 'Klick auf Punkt zum Bearbeiten.',
+					subtext: 'Klick abbrechen, um Änderungen zu verwerfen.'
 				}
 			},
 			remove: {
 				tooltip: {
-				  text: 'Zum Löschen auf Object klicken'
+					text: 'Zum Löschen auf Object klicken.'
 				}
 			}
 		}
@@ -637,6 +637,10 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 			this._map.addLayer(this._poly);
 		}
 
+		if (markersLength >= 6) {
+			this._showMaximumVertexErrorTooltip();
+		}
+
 		this._vertexChanged(latlng, true);
 	},
 
@@ -987,6 +991,23 @@ L.Draw.Polyline = L.Draw.Feature.extend({
 		this._clearHideErrorTimeout();
 		this._hideErrorTimeout = setTimeout(L.Util.bind(this._hideErrorTooltip, this), this.options.drawError.timeout);
 	},
+
+	_showMaximumVertexErrorTooltip: function () {
+		this._errorShown = true;
+
+		this._tooltip
+			.showAsError()
+			.updateContent({ text: L.drawLocal.draw.handlers.polyline.tooltip.max });
+
+			// Update shape
+		this._updateGuideColor(this.options.drawError.color);
+		this._poly.setStyle({ color: this.options.drawError.color });
+
+		// Hide the error after 2 seconds
+		this._clearHideErrorTimeout();
+		this._hideErrorTimeout = setTimeout(L.Util.bind(this._hideErrorTooltip, this), this.options.drawError.timeout);
+	},
+
 
 	_hideErrorTooltip: function () {
 		this._errorShown = false;

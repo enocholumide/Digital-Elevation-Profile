@@ -2,6 +2,7 @@
 import { Component, Output, OnInit, EventEmitter, HostListener, Renderer, ViewChild, ElementRef, ViewContainerRef } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
+
 import { GeneralHttpService } from '../shared/general-http.service';
 import { EmitterService } from '../shared/emitter.service';
 import { MapService } from '../shared/map.service';
@@ -75,6 +76,7 @@ export class LeafletmapComponent implements OnInit {
   public geocodedPlaces:L.FeatureGroup;
   public placesMarker:L.Marker;
   public placesPopUp:HTMLAnchorElement;
+  public tempMajorNodeLayer:any;
   
   // Icons
   public redSphereIcon:L.Icon;
@@ -106,22 +108,17 @@ export class LeafletmapComponent implements OnInit {
     private _mapService: MapService,
     ) { }
 
+
   @HostListener('document:click', ['$event']) onClick(e) {
-    
+
     // For profile markers
     if (e.target.id === 'labelEdit') {
-      console.log(e);
+
       let id = e.path[2].attributes[0].value;
       let newLabel = String($('.form-control').val());
       this.drawnMajorNodes.getLayer(id).setTooltipContent(newLabel);
-
-      console.log(id);
-      console.log(this.drawnMajorNodes);
-
       let layer:any = this.drawnMajorNodes.getLayer(id);
-
       let editedLabel = { editedLabel: newLabel, index: layer.index };
-
       this._emitterService.publishData(editedLabel);
     }
 
@@ -133,7 +130,7 @@ export class LeafletmapComponent implements OnInit {
     } 
       
   } // Host Listener
-
+    
   ngOnInit() {
       
       // Initialize leaflet map and center at karlsruhe
@@ -185,23 +182,19 @@ export class LeafletmapComponent implements OnInit {
       this._map.addLayer(this.geocodedPlaces);
       this._map.addLayer(this.drawnMajorNodes);
       
-      //TODO: Create Separate layer for peaks shown on the map
-      
+      // Save and publish the map to be used in the profile component
       this._map["leafletmap"] = "leafletmap";
       this._mapService.map = this._map;
-
-      console.log(this._mapService.map);
-
       this._emitterService.publishData(this._mapService.map);
 
       this._searchedLocation();
       
-
     } // On Initialize
 
     
     /**
-     * Listener for updating user mouse position 
+     * Listener for updating user mouse position
+     * Enoch 
      * @param e 
      */
     protected _onMouseMove(e): string {
@@ -213,6 +206,7 @@ export class LeafletmapComponent implements OnInit {
     
     /**
      * Listens for when draw starts on the map and clear all layers
+     * Enoch
      * @param e 
      */
     protected __onDrawStart(e): void {
@@ -224,7 +218,8 @@ export class LeafletmapComponent implements OnInit {
     } 
     
     /**
-     * Listens for when draw finishes on the map..
+     * Listens for when draw finishes on the map.
+     * Enoch
      * @param e 
      */
     protected __onDrawCreated(e): void {
@@ -243,37 +238,8 @@ export class LeafletmapComponent implements OnInit {
 
       // Empty stored points data that would be coming from the on draw edited event - see below
       this.storedPoints_LatLng = [];
-      let infoBox = document.createElement('a');
-      infoBox.innerHTML = 
-      `   <form id="edit_labels" role="form">
-                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">bearbeiten</span>
-                  <input id="edit_labels" type="text" class="form-control" placeholder="z.B Berg A">     
-          </form>  
-      `
-      for (let i = 0; i < layer._latlngs.length; i++) {
-          this.storedPoints_LatLng[i] = L.latLng (
-                                    layer._latlngs[i].lat, 
-                                    layer._latlngs[i].lng
-                                    );
-                       
-          vertex = L.marker( layer._latlngs[i], 
-                      {
-                      icon: this.redSphereIcon,
-                      title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
-                      }).bindTooltip(this.getMarkerLabel(i) , {interactive:true, permanent: true, direction: 'top', offset: [0, -5], });
-          
-          vertex["index"] = i;
-          //console.log(vertex);
-          
-          this.drawnMajorNodes.addLayer(vertex);
-
-          vertex.on('click', e =>
-            infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
-            vertex.bindPopup(infoBox, { offset: [0, 115], }),
-          ) 
-          profileVertex[i] = vertex;
-      }
-
+      this.updateNodeMarkers(layer);
+      
       //console.log('%cNew Created Points: ',  'color: red'); console.log(this.storedPoints_LatLng);
       //console.log('%cNew Created Feature Parameters:  ', 'color: blue');
       
@@ -282,100 +248,77 @@ export class LeafletmapComponent implements OnInit {
     } // Draw Created Event
 
     protected __onEditStart(e): void {
-		
-		this.drawnMarkers.clearLayers();
-    this.drawnMajorNodes.clearLayers();
-    this.editstart.emit();
+      this.editstart.emit();
     }
 
     protected __onDrawEdited(e): void {
-      console.log('%cEvent: draw:edited ', 'color: grey');
 
-      this.__onupdateView('draw:edited');
+      console.log('%cEvent: draw:edited ', 'color: grey');
 
       let profileVertex = [];
       let vertex:L.Marker;
       let elayers:any;
       elayers = e.layers; 
-      
-      // Empty existing stored points and re-populate
-      this.storedPoints_LatLng = [];
-      this.peaksDataArray = [];
-            let infoBox = document.createElement('a');
-      infoBox.innerHTML = 
-      `   <form id="edit_labels" role="form">
-                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">bearbeiten</span>
-                  <input id="edit_labels" type="text" class="form-control" placeholder="z.B Berg A">     
-          </form>  
-      `
-      for (let i = 0; i < elayers._layers[this.lineLeafletID]._latlngs.length; i++) {
-          this.storedPoints_LatLng[i] = L.latLng (
-                                          elayers._layers[this.lineLeafletID]._latlngs[i].lat, 
-                                          elayers._layers[this.lineLeafletID]._latlngs[i].lng
-                                    );
-          // Refuse to draw markers when the nodes are more than 6 - the maximum                           
-          if (i <= 5) {
+      let tempArray = [elayers._layers];
+      let noDrawError = true;
 
-          vertex = L.marker( elayers._layers[this.lineLeafletID]._latlngs[i], 
-                      {
-                      icon: this.redSphereIcon,
-                      title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
-                      }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
-          
-          vertex["index"] = i;
-          //console.log(vertex);
+      let lID = this.lineLeafletID;
+      console.log(lID);
 
-          this.drawnMajorNodes.addLayer(vertex);
-
-            vertex.on('click', e =>
-            infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
-            vertex.bindPopup(infoBox, { offset: [0, 115], })) 
-          
-          profileVertex[i] = vertex;
-        }
-        
-        // At the end of the loop, check if the stored items are more than 6, then slice the stored points
-        if (i === (elayers._layers[this.lineLeafletID]._latlngs.length - 1)) {
-            if ( this.storedPoints_LatLng.length > 5) {
-              console.log('%c NOTE: Edited Item have been sliced, only first 6 nodes retained. ', 'background: red; color: white');
-              this.storedPoints_LatLng = this.storedPoints_LatLng.slice(0, 6)
-            }
-        }
+      // Catch error when user starts edit but choose to cancel
+      try {
+        console.log(e.layers._layers[lID]._leaflet_id);
+      } catch (error) {
+        noDrawError = false;
+        //console.log(noDrawError);
+        this.updateNodeMarkers();  
       }
+      
+      if (noDrawError) {
+        // Empty existing stored points and re-populate
+        this.storedPoints_LatLng = [];
+        this.peaksDataArray = [];
 
-      //console.log('%cEdited Points: ', 'color: red'); console.log( this.storedPoints_LatLng );
-      //console.log('%cEDITED Feature Parameters: ', 'color: blue');
+        let layer = elayers._layers[lID];
+        this.updateNodeMarkers(layer);
 
-      this._getAllVertix();
-      this.edited.emit();
+        //console.log('%cEdited Points: ', 'color: red'); console.log( this.storedPoints_LatLng );
+        //console.log('%cEDITED Feature Parameters: ', 'color: blue');
+
+        this._getAllVertix();
+        this.edited.emit();
+      }
+      
     }
 
     protected __onDrawDeleted(e): void {
-      this.drawnMarkers.clearLayers();
 
+      this.drawnItems.clearLayers();
+      this.drawnMarkers.clearLayers();
+      this.drawnMajorNodes.clearLayers();
       this.deleted.emit();    
     }
 
-
+  /**
+   * Returns the distance (in meters)  between two points calculated using the Haversine formula
+   * This is the same as the leaflet 'distance to' method
+   * Ref 1: http://leafletjs.com/reference.html#latlng - LEAFLET DOCUMENTATION
+   * Ref 2: http://www.movable-type.co.uk/scripts/latlong.html - by Chris Veness
+   * Ref 3: https://github.com/soichih/node-sgeo - Soichi Hayashi", "email": "soichih@gmail.com
+   * 
+   * For Ref 2, the page presents a variety of calculations for lati­tude/longi­tude points, 
+   * with the formulæ and js code fragments for implementing them.
+   * 
+   * Thus, we will assume the earth is spherical, for now (ignoring ellipsoidal effects) 
+   * – which is more accurate, well, we may not need so much accurracy for now.
+   * Perhaps, this can be an improvement moving forward; 
+   * Especially if the user wants elevation profile betwen Karlsruhe and Moscow :-)
+   * 
+   * For longer distances, this is purely a SECOND GEODETIC MAJOR TASK problem
+   * Perhaps, this can be an improvement moving forward. :-) this.more_work :-) 
+   */
     public _getDistance(point1:L.LatLng, point2:L.LatLng):number {
-      /**
-       * Returns the distance (in meters)  between two points calculated using the Haversine formula
-       * This is the same as the leaflet 'distance to' method
-       * Ref 1: http://leafletjs.com/reference.html#latlng - LEAFLET DOCUMENTATION
-       * Ref 2: http://www.movable-type.co.uk/scripts/latlong.html - by Chris Veness
-       * Ref 3: https://github.com/soichih/node-sgeo - Soichi Hayashi", "email": "soichih@gmail.com
-       * 
-       * For Ref 2, the page presents a variety of calculations for lati­tude/longi­tude points, 
-       * with the formulæ and js code fragments for implementing them.
-       * 
-       * Thus, we will assume the earth is spherical, for now (ignoring ellipsoidal effects) 
-       * – which is more accurate, well, we may not need so much accurracy for now.
-       * Perhaps, this can be an improvement moving forward; 
-       * Especially if the user wants elevation profile betwen Karlsruhe and Moscow :-)
-       * 
-       * For longer distances, this is purely a SECOND GEODETIC MAJOR TASK problem
-       * Perhaps, this can be an improvement moving forward. :-) this.more_work :-) 
-       */       
+       
       const RAD = 0.01745329252;
       const DEG = 57.295779513;
 
@@ -396,12 +339,12 @@ export class LeafletmapComponent implements OnInit {
 
     /**
     * The distrubtion of the vertex based on the distance have to be discussed
-    * This is just a test scenerio
+    * This is just a test scenerio.
+    * Enoch
     */
     public _getAllVertix() {
 
-      const MAXVERTIX = 200;
-
+      const MAXVERTIX = 200;          // 0. Maximum if using google with current API key 
       this.totalLength = 0;           // 1.
       let partLength = [];            // 2.
       this.totalVertix = 0;           // 3.
@@ -447,7 +390,6 @@ export class LeafletmapComponent implements OnInit {
         } // 3. @i                               
       } // 1, 2 @i
 
-
       // Empty all incoming arrays
       this.featureVertices = [];
       let partBuffer = [];
@@ -467,8 +409,7 @@ export class LeafletmapComponent implements OnInit {
           let value = partVertixNumber[i];
           sum = sum + (value - 1)
           this.majorNodeIndex.push(sum);
-        
-
+      
         // Here, get the lat and lng for a line part and ...
         tempArray = this._getfractionPoints(this.storedPoints_LatLng[i], this.storedPoints_LatLng[i+1], partVertixNumber[i]);
 
@@ -488,7 +429,7 @@ export class LeafletmapComponent implements OnInit {
                       icon: this.greySphereIcon,
                       title: tempArray[j].lat + ' ' + tempArray[j].lng
             });
-            //this.drawnMarkers.addLayer(vertex);
+            //this.drawnMajorNodes.addLayer(vertex);
             featurePoints.push(tempArray[j]);
 
         }
@@ -512,18 +453,16 @@ export class LeafletmapComponent implements OnInit {
         }
         
       this.drawnLine = L.polyline(this.featureVertices, {color: 'black'});
-      //this.drawnMarkers.addLayer(this.drawnLine);
+      this.drawnMajorNodes.addLayer(this.drawnLine);
 
       // Here, we have the coords of the nodes and all vertix
       // The vertix coords will be sent for z - values
-      //console.log('Node Coords'); console.log(this.storedPoints_LatLng);console.log('Total Vertices'); console.log(this.featureVertices);
+      //  console.log('Node Coords'); console.log(this.storedPoints_LatLng);console.log('Total Vertices'); console.log(this.featureVertices);
 
       // Proceed to get elevation for all all vertix
       this.getElevation(featurePoints);
 
     } // Get All Vertix method
-
-
 
     public getElevation(featurePoints:Array<any>): void {
 
@@ -535,9 +474,11 @@ export class LeafletmapComponent implements OnInit {
     }
 
     /**
+     * Publish elevation data to the profile
+     * NOTE: Format is different from other server.
      * 
      * Enoch
-     * @param elevation 
+     * @param elevation Raw data from google server; 
      */
     public sendElevationToProfile(elevation:any):void {
       console.log('%cRaw data for the line graph', 'background:red; color:white');console.log(elevation);
@@ -577,11 +518,15 @@ export class LeafletmapComponent implements OnInit {
       this._emitterService.publishData(tempData);
 
       console.log('%cElevation data sent to profile component', 'background:purple; color:white'); //console.log(tempData);
-      
+      console.log('%cWaiting for peaks data......', 'background:orange; color:white');
     } // sendElevationToProfile
 
   /**
-   * Moving forward - this method has to be improved to listen to changes on the label marker 
+   * Get preliminary label for markers, from A - D;
+   * Host Listener have been implemented to catch the click events on the markers and it can be updated on the profile
+   * 
+   * Enoch
+   * @param i Index position of the node point, usually between 0 - 5, only 6 nodes allowed
    */
     public getMarkerLabel(i:number):string{
         return this.markerLabel[i];
@@ -593,8 +538,8 @@ export class LeafletmapComponent implements OnInit {
           this.drawnMarkers.clearLayers();
           this.drawnMajorNodes.clearLayers();
       } else if (signal = 'draw:edited') {
-          this.drawnMarkers.clearLayers();
-          this.drawnMajorNodes.clearLayers();
+          //this.drawnMarkers.clearLayers();
+          //this.drawnMajorNodes.clearLayers();
       }
       
       else if (signal = 'drawstart' ) {
@@ -602,9 +547,26 @@ export class LeafletmapComponent implements OnInit {
         this.drawnMarkers.clearLayers();
         this.drawnMajorNodes.clearLayers();
       }
+
+      else if (signal = 'draw:deletestarted' ) {
+
+        this.drawnItems.clearLayers();
+
+        //this.drawnMajorNodes.clearLayers();
+      }
+
+
     } // __onupdateView
 
-
+    /**
+     * Method called after the elevation points request is succesful.
+     * It looks for nearest points that will be shown on the profile.
+     * For now, only peaks and river data are supported.
+     * Be careful when emitting further data to the profile component, 
+     * better for such data to have its own property.
+     * 
+     * Enoch
+     */
     public getNearestPoints(){
         
         // Create a turf line along the nodes
@@ -635,10 +597,8 @@ export class LeafletmapComponent implements OnInit {
         let line = this.drawnLine.toGeoJSON();
         buffered = turf.buffer(line, bufferDistance, 'meters');                   
 
-        /**
-         * TO Get points of interest from OverPass API within the bounding box
-         */
-
+         // TO Get points of interest from OverPass API within the bounding box
+        
         let nearestPeaks:string = 'node["natural"="peak"]'; // request for peak points
         let nearestRivers:string = 'way["waterway"="river"]'; // request for peak points
         let bbox:string = '('+ (String(bottomLeft.lat)) + ',' + (String(bottomLeft.lng)) + ',' + (String(topRight.lat)) + ',' + (String(topRight.lng)) + ')' + ';out;';
@@ -653,7 +613,6 @@ export class LeafletmapComponent implements OnInit {
         this._pointsOfInterestRequest.getRequest(nearestRivers).subscribe(  data => { this.processRivers(data); },
                                                                                         err => console.error(err));      
         
-        //this.pointsOfInterest(nearestPeaks, buffered);
   }  
 
 
@@ -672,8 +631,8 @@ export class LeafletmapComponent implements OnInit {
    *  
    * @param peak Raw data from OverPass API
    * @param buffered Buffered polygon from Turf
-   *  
-   */
+   * 
+   * */
   
   private processPeaks(peak:any, buffered:GeoJSONFeature<GeoJSONPolygon>):void{
         
@@ -694,49 +653,48 @@ export class LeafletmapComponent implements OnInit {
         this.peaksDataArray = [];
         let peakLatLng:L.LatLng;
 
-        for (let i = 0; i < peak.elements.length; i++) {
+          for (let i = 0; i < peak.elements.length; i++) {
 
-          if(peak.elements[i].tags.hasOwnProperty("name")) {
+            if(peak.elements[i].tags.hasOwnProperty("name")) {
 
-          let pointname:string = peak.elements[i].tags.name;
-          let turfPoint = turf.point([peak.elements[i].lon, peak.elements[i].lat]);
-          features.push(turfPoint);
-          let isInside = turf.inside(turfPoint, turfPoly);
-          //console.log(isInside);
-             
-          if (isInside) {
-            counter++
-            notInside.push(i);
-            let peakName = peak.elements[i].tags.name;
-            peakLatLng = L.latLng ( peak.elements[i].lat, peak.elements[i].lon,
-                                      // peak.elements.elements[i].tags.ele, // < -- Unfortunately, not all items from OverPass have this information                                
-                                  );
-                                      
-            peakInside = L.marker( peakLatLng, 
-            {
-            icon: this.peakIcon,
-            title: peak.elements[i].lat + ' ' + peak.elements[i].lon
-            }).bindTooltip(peak.elements[i].tags.name , {permanent: true, direction: 'top', offset: [0, -5], });
-            
-            let peakData = {position: peakLatLng, name: peakName};
-            peakInsideArray.push(peakInside);
-            peakInsideBuffer.push(peak.elements[i].tags.name);
-            
-            this.drawnMarkers.addLayer(peakInside);
+              let pointname:string = peak.elements[i].tags.name;
+              let turfPoint = turf.point([peak.elements[i].lon, peak.elements[i].lat]);
+              features.push(turfPoint);
+              let isInside = turf.inside(turfPoint, turfPoly);
+              //console.log(isInside);
+              
+              if (isInside) {
+                counter++
+                notInside.push(i);
+                let peakName = peak.elements[i].tags.name;
+                peakLatLng = L.latLng ( peak.elements[i].lat, peak.elements[i].lon,
+                                          // peak.elements.elements[i].tags.ele, // < -- Unfortunately, not all items from OverPass have this information                                
+                                      );
+                                          
+                peakInside = L.marker( peakLatLng, 
+                {
+                icon: this.peakIcon,
+                title: peak.elements[i].lat + ' ' + peak.elements[i].lon
+                }).bindTooltip(peak.elements[i].tags.name , {permanent: true, direction: 'top', offset: [0, -5], });
+                
+                let peakData = {position: peakLatLng, name: peakName};
+                peakInsideArray.push(peakInside);
+                peakInsideBuffer.push(peak.elements[i].tags.name);
+                
+                //this.drawnMarkers.addLayer(peakInside);
 
-            this.peaksDataArray.push(peakData);
-            peakInformation.push(peakData);
-          } 
-        }
-
-        }
+                this.peaksDataArray.push(peakData);
+                peakInformation.push(peakData);
+              } 
+            }
+          }
         
       this.peaksData = turf.featureCollection(features);
       console.log('%cOnly ' + ( counter )  + ' out of ' + (peak.elements.length) + ' peaks were found within the buffer distance; this will be shown on the profile', 'color: white; background: green');
       console.log('List: ' + peakInsideBuffer);
       //console.log('%cThe elevation data and the peak information will be sent to the profile component', 'background:black; color:white');
 
-      // Compute distance of each peak to each vertix
+      // Compute distance of each peak to each feature vertix
       let baseDist = 0;
       let lowestIndex = 0;
       let isLower = false;
@@ -753,12 +711,12 @@ export class LeafletmapComponent implements OnInit {
 
       for (let i = 0; i < this.peaksDataArray.length; i++) {
         
-          let peakPoint:L.LatLng = L.latLng(this.peaksDataArray[i].position.lat, this.peaksDataArray[i].position.lng, 0);
-          let peakName = this.peaksDataArray[i].name;
-          let drawSketch = true;
-          let onNode = false;
+        let peakPoint:L.LatLng = L.latLng(this.peaksDataArray[i].position.lat, this.peaksDataArray[i].position.lng, 0);
+        let peakName = this.peaksDataArray[i].name;
+        let drawSketch = true;
+        let onNode = false;
 
-          // Compute the distance of each peak to all feature vertices and get the lowest
+        // Compute the distance of each peak to all feature vertices and get the lowest
           
         lowestIndex = this.getLowestIndex(peakPoint);
         
@@ -989,15 +947,33 @@ export class LeafletmapComponent implements OnInit {
 
     // 5.5 Format filtered items to x and y for profile component
     let temp = [];
+    let tempData = []
+    let exist: boolean = false;
     for (let i = 0; i < sortedSnappedPeakPoints.length; i++) {
-      temp[i] = {x:sortedSnappedPeakPoints[i].distance|0, y:sortedSnappedPeakPoints[i].geometry.alt|0, name:sortedSnappedPeakPoints[i].name}
+      let newName = sortedSnappedPeakPoints[i].name;
+      exist =  temp.some(x => 
+      x.name === newName)
+      //console.log(exist);
+      if (!(exist)) {
+          tempData.push({x:sortedSnappedPeakPoints[i].distance|0, y:sortedSnappedPeakPoints[i].geometry.alt|0, name:sortedSnappedPeakPoints[i].name})
+          // Show on map
+          let peakInside = L.marker(sortedSnappedPeakPoints[i].geometry, 
+          {
+          icon: this.peakIcon,
+          title: sortedSnappedPeakPoints[i].geometry.alt + "m", 
+          }).bindTooltip(sortedSnappedPeakPoints[i].name , {permanent: true, direction: 'top', offset: [0, -5], });  
+          this.drawnMajorNodes.addLayer(peakInside);
+      }
     }
     //console.log ('%cPeaks Graph Data ' , 'background:purple; color:white'); console.log(temp);
 
-    let peakData = {peak:[]};
-    peakData.peak = temp;
+    //-------------PUBLISH DATA----------------
+    let peakData = {peak:tempData};
     this._emitterService.publishData(peakData);
+    //-------------ooooooooooooo---------------
+
     console.log('%cPeak data sent to profile component', 'background:purple; color:white');
+    console.log('%cWaiting for rivers data...', 'background:orange; color:white');
     
 } // Process Peaks
 
@@ -1015,7 +991,6 @@ export class LeafletmapComponent implements OnInit {
     // 1. First check if rivers were found
     // --------------------------------------
     if (!(river.elements.length === 0)) {
-
 
       //console.log ('%cRaw river data: ' , 'background:green; color:white'); console.log(river);
       
@@ -1040,7 +1015,7 @@ export class LeafletmapComponent implements OnInit {
           eachRiver.push({geom:riverCoords, name:riverName});
           turfRiverLines.push(turfLine);
           riverLine = L.polyline(riverCoords, {color: 'darkblue'});
-          this.drawnMarkers.addLayer(riverLine);
+          this.drawnMajorNodes.addLayer(riverLine);
         }
       }
 
@@ -1084,7 +1059,7 @@ export class LeafletmapComponent implements OnInit {
         // Show points of intersecetion on the map - just for development purpose..
         for (let i = 0; i < riversIntersectedPoints.length; i++){
           let marker = L.marker(riversIntersectedPoints[i].geometry, {icon:this.greenSphereIcon, title:riversIntersectedPoints[i].name});
-          this.drawnMarkers.addLayer(marker);
+          this.drawnMajorNodes.addLayer(marker);
         }
 
         // Get intersections for each part of the drawn line
@@ -1160,7 +1135,8 @@ export class LeafletmapComponent implements OnInit {
 
               if(index === 0) {
                 c = [0 , 1];
-              } else if (index === this.featureVertices.length - 1) {c = [-1, 0] }
+              } 
+              else if (index === this.featureVertices.length - 1) {c = [-1, 0] }
               else {
                 let distanceForward = ppPoint.distanceTo(this.featureVertices[index+1]);
                 let distanceBack = ppPoint.distanceTo(this.featureVertices[index-1]);
@@ -1238,6 +1214,13 @@ private _changeBasemapLayer(selector: number) {
     
 } // _changeBasemapLayer
 
+/**
+ * Method enables the delete marker task with inner HTML.
+ * The Host listener listens to the click event and delete option if enables.
+ * 
+ * Enoch
+ * @param e Event parameter
+ */
 protected _geocoderMenu(e):void {
   let _lat = Number(e.latlng.lat);
   let _lng = Number(e.latlng.lng);
@@ -1299,7 +1282,6 @@ private plotPerpendicular (peakName:string, a:L.LatLng, b: number, c:number, plo
     let lowestIndex = b;
     let nextFeaturePoint;
 
-
     //console.log(lowestIndex + c);
 
     let peakTurfPoint = turf.point([peakPoint.lng, peakPoint.lat]);
@@ -1334,7 +1316,7 @@ private plotPerpendicular (peakName:string, a:L.LatLng, b: number, c:number, plo
         let ppPoint = L.latLng(snappedPeak.geometry.coordinates[1], snappedPeak.geometry.coordinates[0])
         let ppPointMarker = L.marker((ppPoint), {icon:this.yellowSphereIcon});
         this.onDrawLine(peakPoint, ppPoint, 'red');
-        this.drawnMarkers.addLayer(ppPointMarker);
+        this.drawnMajorNodes.addLayer(ppPointMarker);
         
         
         if (send === 'send') {
@@ -1366,7 +1348,7 @@ private plotPerpendicular (peakName:string, a:L.LatLng, b: number, c:number, plo
  * 
  * After installing the 'Allow-Control-Allow-Origin' plugin to google chrome, it worked. 
  * This is just good/ handy for development purposes, i think because when the extension is turned off, erros comes back :(
- * We should resolve this before production!!!!!
+ * We should resolve this before production..
  * 
  * Better still, change to the ESRI Elevation service
  * 
@@ -1498,7 +1480,7 @@ public sortPeaksWithSameIndex(data:Array<any>):Array<any>{
     }
   // For array with more than two items - it gets a lil bit more complicated here
 } else{
-``
+
       // First compile the directions.
       let backwardDirection = [];
       let forwardDirection = [];
@@ -1534,6 +1516,16 @@ public sortPeaksWithSameIndex(data:Array<any>):Array<any>{
   }
 }
 
+/**
+ * For peaks and River data that are not ordered, the method inserts the feature points 
+ * to the data, this is necessary to compute the accumulated distance of each peak/ river point
+ * to be shown on the profile component
+ * 
+ * Enoch
+ * @param item 
+ * @param partNo 
+ * @param category 
+ */
 public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
   //console.log('Each Feature Parts');
 
@@ -1653,26 +1645,12 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
       return partcoords;
       
     }
-    
-    /**
-     * Publish River and Peak data to the profile component.
-     * 
-     * Enoch.
-     */
-    public onfinish() {
-      let data= {peak:[], river:[]};
-      data.peak = this.peaksGraphData;
-      data.river= this.riverGraphData;
-      console.log('%cRiver and Peaks Data', 'color:white; background:black');
-      console.log(data);
-      this._emitterService.publishData(data);
-    }
 
-    /**
-     * Get the shortest distance from a point to a node on the feature vertix
-     * Enoch
-     * @param point Any Point in L.LatLng
-     */
+/**
+ * Get the shortest distance from a point to a node on the feature vertix
+ * Enoch
+ * @param point Any Point in L.LatLng
+ */
   public getLowestIndex(point:L.LatLng):number {
         let lowestIndex = 0;
         let lowestValue = 0;
@@ -1693,5 +1671,62 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
         return lowestIndex;
     }
 
-} // Leaflet map class
+  /**
+   * Method serves the draw:create and draw:edited events to (re)display the major node markers 
+   * on the map. And thereafeter, binds a innerHTML to these markers which will be called on click
+   * Users can edit the labels and it will be emitted to the profile component from the Host listener
+   * It is important to set the leaflet id of each vertex on the inner HTML.
+   * 
+   * Enoch
+   * @param layer Event layer from the leaflet-draw plugin 
+   */
+  private updateNodeMarkers(layer?){
 
+      if (layer === undefined){
+        layer = this.tempMajorNodeLayer;
+      }
+      this.drawnMajorNodes.clearLayers();
+    
+      let vertex:L.Marker;
+      let infoBox = document.createElement('a');
+      infoBox.innerHTML = 
+      `   <form id="edit_labels" role="form">
+                  <span type="button" class="input-group-addon btn btn-primary active" id="labelEdit">bearbeiten</span>
+                  <input id="edit_labels" type="text" class="form-control" placeholder="z.B Berg A">     
+          </form>  
+      `
+      for (let i = 0; i < layer._latlngs.length; i++) {
+          this.storedPoints_LatLng[i] = L.latLng (
+                                          layer._latlngs[i].lat, 
+                                          layer._latlngs[i].lng
+                                    );
+          // Refuse to draw markers when the nodes are more than 6 - the maximum                           
+          if (i <= 5) {
+
+          vertex = L.marker( layer._latlngs[i], 
+                      {
+                      icon: this.redSphereIcon,
+                      title: this.storedPoints_LatLng[i].lat + ' ' + this.storedPoints_LatLng[i].lng
+                      }).bindTooltip(this.getMarkerLabel(i) , {permanent: true, direction: 'top', offset: [0, -5], }); 
+          
+          vertex["index"] = i;
+          //console.log(vertex);
+          
+          this.drawnMajorNodes.addLayer(vertex);
+
+          vertex.on('click', e =>
+          infoBox.setAttribute('leafletid', String(e.target._leaflet_id)),
+          vertex.bindPopup(infoBox, { offset: [0, 115], })) 
+          
+          // At the end of the loop, check if the stored items are more than 6, then slice the stored points
+          if (i === (layer._latlngs.length - 1)) {
+            if ( this.storedPoints_LatLng.length > 5) {
+              console.log('%c NOTE: Edited Item have been sliced, only first 6 nodes retained. ', 'background: red; color: white');
+              this.storedPoints_LatLng = this.storedPoints_LatLng.slice(0, 6)
+            }
+          }
+        }
+      }
+      this.tempMajorNodeLayer = layer;
+    }
+} // Leaflet map class

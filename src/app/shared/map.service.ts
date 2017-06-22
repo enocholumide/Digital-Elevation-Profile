@@ -44,7 +44,7 @@ export class MapService {
               app_code: 'dq2MYIvjAotR8tHvY8Q_Dg',
               base: 'base',
               maxZoom: 20
-      }),
+        }),
 
           L.tileLayer('http://{s}.{base}.maps.cit.api.here.com/maptile/2.1/maptile/{mapID}/satellite.day/{z}/{x}/{y}/256/png8?app_id={app_id}&app_code={app_code}', {
               attribution: 'Map &copy; 1987-2014 <a href="http://developer.here.com">HERE</a>',
@@ -61,7 +61,7 @@ export class MapService {
               subdomains: 'abcd',
               maxZoom: 19
           }),
-      ];
+        ];
 
     public providersImages = [ '../../assets/icons/satellitenbild.png',
                           '../../assets/icons/relief_maps4free.png',
@@ -73,3 +73,5 @@ export class MapService {
     public providersDescription = ['SATTELITE','RELIEF','LANDSCAPE','TOPO MAP','OSM'];  
 
 }
+
+

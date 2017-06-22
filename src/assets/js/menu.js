@@ -6,8 +6,6 @@ $(document).ready(function(){
   $(".dropdown-menu").show();
   $(".informationBlock").hide();
 
-  
-
   $(".fa-chevron-circle-left").click(function(){
     $(".sidebar_menu").addClass("hide_menu");
     $(".toggle_menu").addClass("opacity_one");
@@ -26,8 +24,7 @@ $(document).ready(function(){
         x.style.display = 'block';
     } else {
         x.style.display = 'none';
-        a.style.display = 'none';
-        
+        a.style.display = 'none';    
     }
   });
 
@@ -51,28 +48,9 @@ $(document).ready(function(){
     }
   });
 
-
-
-
   $('.dropdown-menu').on('click','li', function(){
    $(this).addClass('active').siblings().removeClass('active');
-});
-
-
-
-
-
-
-  /** //time out and delays not working as expected, 
-  function showMenuBarOnHover() { 
-    $(".toggle_menu").hover(function(){
-      $(".sidebar_menu").removeClass("hide_menu");
-      $(".toggle_menu").removeClass("opacity_one");
-    });
-  }
-  // use setTimeout() to execute
-  setTimeout(showMenuBarOnHover, 50) 
-  */
+  });
   	   
 	  $(".layersToggle").click(function(){
 	    $(".baseLayers").removeClass("hide_layers");
