@@ -96,8 +96,8 @@ export class LeafletmapComponent implements OnInit {
   public _map: Map;
   public coords = '...loading';
   public currentSelector:number;
-  public currentproviderDescription = this._mapService.providersDescription[this.initMap];
-  public currentImage =  this._mapService.providersImages[this.initMap];
+  public currentproviderDescription = this._mapService.baseMaps[this.initMap].description;
+  public currentIcon =  this._mapService.baseMaps[this.initMap].icon;
 
   constructor
     ( 
@@ -120,6 +120,7 @@ export class LeafletmapComponent implements OnInit {
       let layer:any = this.drawnMajorNodes.getLayer(id);
       let editedLabel = { editedLabel: newLabel, index: layer.index };
       this._emitterService.publishData(editedLabel);
+        
     }
 
     // For markers delete;
@@ -132,13 +133,14 @@ export class LeafletmapComponent implements OnInit {
   } // Host Listener
     
   ngOnInit() {
-      
-      // Initialize leaflet map and center at karlsruhe
 
+      // Initialize leaflet map and center at karlsruhe
       this._map =  L.map('leaflet-map-component', { center: [49.00, 8.40],zoom: 12, zoomControl: false });
       
       // Add tile layer to Map
-      this._mapService.providers[this.initMap].addTo(this._map);
+      let tilelayer = this._mapService.baseMaps[this.initMap].tile;
+      tilelayer["isBasemap"] = true;
+      tilelayer.addTo(this._map);
 
       // Events captured
       this._map.on('mousemove', this._onMouseMove, this);      
@@ -1177,7 +1179,7 @@ export class LeafletmapComponent implements OnInit {
 
    public _searchedLocation (): void {
 
-    //Anja
+    //Anja F.
     let geocoder = L.control.geocoder('mapzen-u9qqNQi',
                         { position: 'topright',
                           panToPoint: true,
@@ -1194,23 +1196,35 @@ export class LeafletmapComponent implements OnInit {
   } // _searchedLocation
 
 /**
+ * Removes a tile layer from the map with an attribute (isBasemap) set to be true
+ * 
+ * Enoch
+ * @param e 
+ */
+private removeBaseMap(e) { if(e.isBasemap){ this._map.removeLayer(e) } }
+
+/**
 * Method called from the html template on select of icons on the map
+* It removes the basemap of the page with a predefined attribute (isBasemap == true)
+* and change to the requested basemap using the selector send from the template
 *
 * Enoch
-* @param selector 
+* @param i Index of basemap 
 */
-private _changeBasemapLayer(selector: number) {
+private _changeBasemapLayer(i: number) {
 
-  // remove all previous basemaps
-  for (let i = 0; i < this._mapService.providers.length; i++) {
-    this._map.removeLayer(this._mapService.providers[i]); 
-  }
+  // Remove existing tile layers
+  this._map.eachLayer(e => this.removeBaseMap(e));
 
-  // proceed to add basemap selected by user, change icon image and label of the icon toggle
-    this._mapService.providers[selector].addTo(this._map);
-    this.currentImage = this._mapService.providersImages[selector];
-    this.currentproviderDescription = this._mapService.providersDescription[selector];
-    this.currentSelector= selector;
+  // proceed to add basemap selected by user,
+  let tilelayer = this._mapService.baseMaps[i].tile;
+  tilelayer["isBasemap"] = true; // Set attribute to be used to remove the layer
+  tilelayer.addTo(this._map);
+  
+  //  Change icon image and label of the icon toggle
+  this.currentIcon = this._mapService.baseMaps[i].icon,
+  this.currentproviderDescription = this._mapService.baseMaps[i].description,
+  this.currentSelector = i;
     
 } // _changeBasemapLayer
 
@@ -1226,7 +1240,7 @@ protected _geocoderMenu(e):void {
   let _lng = Number(e.latlng.lng);
   var _selectedAddress = e.feature.properties.label;
 
-  console.log('You have selected', _selectedAddress, _lat, _lng); // :)
+  //console.log('You have selected', _selectedAddress, _lat, _lng); // :)
 
   // create markers from MAPZEN information
   const pointMarker = L.icon({
