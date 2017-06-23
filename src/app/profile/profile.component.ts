@@ -60,6 +60,10 @@ export class ProfileComponent implements OnInit {
 
   
   constructor(private _emitterService: EmitterService, private _mapService: MapService,) {
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
     this.width = 800 - this.margin.left - this.margin.right ;
     this.height = 400 - this.margin.top - this.margin.bottom;
 
@@ -69,7 +73,11 @@ export class ProfileComponent implements OnInit {
 
   /**
    * Method makes decision on all incoming data (from the leaflet map component)
+<<<<<<< HEAD
    * The first coniditon recieves the map intialized from the lealfet map.
+=======
+   * The first condition recieves the map intialized from the lealfet map.
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
    * This is important in displaying markers on mouseover on the elevation profile.
    * 
    * The else condition passes to the create elevation profile where further decisons are made based on the 
@@ -99,6 +107,11 @@ export class ProfileComponent implements OnInit {
 
     /**
      * Method recieves all incoming data and check its properties.
+<<<<<<< HEAD
+=======
+     * If data is not peaks or river data, Scale the axis with the elevation data,
+     * then draw the svg axis based on the data and plot the profile.
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
      * 
      * Enoch
      */
@@ -118,7 +131,11 @@ export class ProfileComponent implements OnInit {
     
     // If data is not peaks or river data, then draw the svg axis based on the data and plot the profile
     
+<<<<<<< HEAD
     else if (! ((this.lineData.hasOwnProperty("river")) || this.lineData.hasOwnProperty("peak")) ) {
+=======
+    else if ( !((this.lineData.hasOwnProperty("river")) || this.lineData.hasOwnProperty("peak")) ) {
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
     
       this.nodeLabel = [];
       let tempLabel = "";
@@ -129,6 +146,10 @@ export class ProfileComponent implements OnInit {
         } tempLabel = this.lineData[i].name;
       }
 
+<<<<<<< HEAD
+=======
+      // Scale the axis with the elevation data
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
       this.xScale = d3Scale.scaleLinear()
           .domain([0, d3.max(this.lineData, function(d) { return d.x; })])
           .range([0, this.width]);
@@ -143,6 +164,10 @@ export class ProfileComponent implements OnInit {
       var xScale = this.xScale;                    
       var yScale = this.yScale;
 
+<<<<<<< HEAD
+=======
+      // Draws line and area chart, does not append yet
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
       this.area = d3.area()
           .curve(d3.curveMonotoneX)
           .x(function(d:any) { return xScale(d.x); })
@@ -154,7 +179,11 @@ export class ProfileComponent implements OnInit {
           .x( (d: any) => xScale(d.x) )
           .y( (d: any) => yScale(d.y) );
 
+<<<<<<< HEAD
       
+=======
+      // Append the axis to the svg if update is false and ....
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
       if (this.update === false) {
 
           console.log("Drawing Profile...");
@@ -167,7 +196,12 @@ export class ProfileComponent implements OnInit {
           this.svg.append("g")
               .attr("class", "y axis")
               .call(this.yAxis);
+<<<<<<< HEAD
 
+=======
+          
+          // Finish profile draw
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
           this.appendPlotArea();
           this.appendNodeLabels();
               
@@ -368,7 +402,11 @@ export class ProfileComponent implements OnInit {
         .attr("y2", (d: any) => yScale(d.y)  ) 
         .on("mouseover", d =>
 
+<<<<<<< HEAD
         this.handleMouseOver(d, this.map, hiddenEnter, newdata)
+=======
+        this.handleMouseOver(d, this.map)
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
         
         )
         .on("mouseout", d => this.handleMouseOut(d))
@@ -387,7 +425,11 @@ export class ProfileComponent implements OnInit {
    * @param hiddenEnter 
    * @param newdata 
    */
+<<<<<<< HEAD
   private handleMouseOver(e, map, hiddenEnter, newdata) {
+=======
+  private handleMouseOver(e, map) {
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
     
     let lmap:Map = map;
     let markers:any;
@@ -398,10 +440,17 @@ export class ProfileComponent implements OnInit {
     this.mouseEventsMarkers = new L.FeatureGroup(markers);
     lmap.addLayer(this.mouseEventsMarkers);
 
+<<<<<<< HEAD
     let yellowSphereIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
                                     iconSize: [30,30],
                                     iconAnchor: [15,35]});
     let marker = L.marker([e.geometry.lng, e.geometry.lat], {icon: yellowSphereIcon });
+=======
+    let markerIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
+                                    iconSize: [30,30],
+                                    iconAnchor: [15,35]});
+    let marker = L.marker([e.geometry.lng, e.geometry.lat], {icon: markerIcon });
+>>>>>>> 44f22743ddf6406ce94b1f7fe10e1f4492a704f6
     this.mouseEventsMarkers.addLayer(marker);
 
     let lng = Math.round(e.geometry.lng * 100) / 100;
