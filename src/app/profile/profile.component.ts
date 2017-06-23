@@ -48,6 +48,8 @@ export class ProfileComponent implements OnInit {
   private xScale: any;
   private yScale: any;
   private update;
+
+
   
   public mouseEventsMarkers:L.FeatureGroup;
 
@@ -56,6 +58,7 @@ export class ProfileComponent implements OnInit {
   private counter = 0;
 
   private map: Map;
+  private mapTest:Map
   private map2;
 
   
@@ -63,6 +66,8 @@ export class ProfileComponent implements OnInit {
     
     this.width = 800 - this.margin.left - this.margin.right ;
     this.height = 400 - this.margin.top - this.margin.bottom;
+
+    this.mapTest = this._mapService.map;
 
     this._emitterService.case$.subscribe( newdata => this.switch(newdata) );
 
@@ -343,105 +348,111 @@ export class ProfileComponent implements OnInit {
    */
   private appendPlotArea() {
 
-    var newdata = this.lineData;
+    //----------------------------------------
+    let data = this.lineData;
+    let svg = this.svg;
     let xScale = this.xScale;
     let yScale = this.yScale;
-
+    //----------------------------------------
+    let map = this.map;
+    let markers:any;
+    this.mouseEventsMarkers = new L.FeatureGroup(markers);
+    let eventMarkers = this.mouseEventsMarkers;
+    map.addLayer(eventMarkers);
+    let markerIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
+                                    iconSize: [30,30],
+                                    iconAnchor: [15,35]});
+    //----------------------------------------                               
     this.svg.append("path")
         .datum(this.lineData)
         .attr("class", "line")
         .attr("d", this.line)
         .attr('stroke','red')
         .attr("fill", "none");
-        
+     
     this.svg.append("path")
         .datum(this.lineData)
         .attr("class", "area")
         .attr("d", this.area)
         .attr("fill", "lightsteelblue")
-        
-    let hidden = this.svg.selectAll("g hiddenTicks")
-        .data(this.lineData);
-    let hiddenEnter = hidden.enter()
-        .append("g");
+        .on("mouseenter",
 
-    let circle = hiddenEnter.append("line")
-        .style("stroke", "lightsteelblue")
-        .attr("id", "hiddenTicks")
-        .attr("x1", (d: any) => xScale(d.x) )
-        .attr("x2", (d: any) => xScale(d.x) )   
-        .attr("y1", this.height )  
-        .attr("y2", (d: any) => yScale(d.y)  ) 
-        .on("mouseover", d =>
+          /**
+           * Mouse over event for displaying the XYZ, and marker on the leaflet map
+           * The leaflet map have been initialized as soon as the leaflet map component renders the map.
+           * 
+           * Enoch
+           */
+          function () {
 
-        this.handleMouseOver(d, this.map)
+            //------------Display Marker on Map---------------------
+            // 1. Get x, y on svg
+            var mouse = d3.mouse(this);
+            // 2. Map to x and Y axis
+            var mouseX = xScale.invert(mouse[0]);
+            var mouseY = yScale.invert(mouse[1]);
+            // 3. Get the closest point on the graph data
+            var nearest = (closest(data,mouseX));
+            // 4. Create marker and add to layer
+            let marker = L.marker([nearest.geometry.lng, nearest.geometry.lat], {icon: markerIcon });
+            eventMarkers.addLayer(marker);
+            //------------oooooooooooooooooooooo---------------------
+
+            //------Display Text and Circle on the Profile-----------
+            // 1. Format x,y,z number data
+            let lng = Math.round(nearest.geometry.lng * 100) / 100;
+            let lat = Math.round(nearest.geometry.lat * 100) / 100;
+            let alt = nearest.geometry.alt|0;
+            //2. Show XYZ figures
+            svg.append("g")
+              .append("text")
+              .attr("id", "tips")
+              .attr('dx', xScale(nearest.x))
+              .attr('dy', yScale(nearest.y)-10)
+              .attr("text-anchor", "middle")
+              .text("X: " + lng + " | " + "Y: " + lat + " | " + "Z: " + alt+"m");
+            //3. Append circles
+            svg.append("g")
+              .append("circle")
+              .attr("r", 3)
+              .attr('cx', xScale(nearest.x))
+              .attr('cy', yScale(nearest.y))
+              .attr("id", "tips")
+              .attr("fill", "red")
+            
+          // Get closest point on data
+          function closest(array,num){
+            var i=0, minDiff=1000, ans;
+            for(var i = 0; i < array.length; i++){ var m=Math.abs(num-array[i].x);
+                if( m<minDiff ){ minDiff=m; ans=array[i]} } return ans
+            }  
+        })
+      .on("mouseleave", d => this.handleMouseOut(eventMarkers));
         
-        )
-        .on("mouseout", d => this.handleMouseOut(d))
-        .transition();
+      let hidden = this.svg.selectAll("g hiddenTicks")
+          .data(this.lineData);
+      let hiddenEnter = hidden.enter()
+          .append("g");
+
+      let circle = hiddenEnter.append("line")
+          .style("stroke", "lightsteelblue")
+          .attr("id", "hiddenTicks")
+          .attr("x1", (d: any) => xScale(d.x) )
+          .attr("x2", (d: any) => xScale(d.x) )   
+          .attr("y1", this.height )  
+          .attr("y2", (d: any) => yScale(d.y)  );
   }
 
-
-  /**
-   * Mouse over event for displaying the XYZ, and marker on the leaflet map
-   * The leaflet map have been initialized as soon as the leaflet map component renders the map.
-   * 
-   * Enoch
-   * 
-   * @param e 
-   * @param map 
-   * @param hiddenEnter 
-   * @param newdata 
-   */
-  private handleMouseOver(e, map) {
-    
-    let lmap:Map = map;
-    let markers:any;
-
-    var xScale = this.xScale;                    
-    var yScale = this.yScale;
-
-    this.mouseEventsMarkers = new L.FeatureGroup(markers);
-    lmap.addLayer(this.mouseEventsMarkers);
-
-    let markerIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
-                                    iconSize: [30,30],
-                                    iconAnchor: [15,35]});
-    let marker = L.marker([e.geometry.lng, e.geometry.lat], {icon: markerIcon });
-    this.mouseEventsMarkers.addLayer(marker);
-
-    let lng = Math.round(e.geometry.lng * 100) / 100;
-    let lat = Math.round(e.geometry.lat * 100) / 100;
-    let alt = e.geometry.alt|0;
-
-    this.svg.append("g")
-      .append("text")
-      .attr("id", "tips")
-      .attr('dx', xScale(e.x))
-      .attr('dy', yScale(e.y)-10)
-      .attr("text-anchor", "middle")
-      .text("X: " + lng + " | " + "Y: " + lat + " | " + "Z: " + alt+"m");
-
-    this.svg.append("g")
-      .append("circle")
-      .attr("r", 3)
-      .attr('cx', xScale(e.x))
-      .attr('cy', yScale(e.y))
-      .attr("id", "tips")
-      .attr("fill", "red")
-       
-  }
   /**
    * Method will Clear markers on the map and 
    * remove the XYZ tips on the elevation profile chart on mouse out.
    * 
    * Enoch
-   * @param e 
+   * @param eventMarkers 
    */
-  private handleMouseOut(e) {
-
-    this.mouseEventsMarkers.clearLayers();
+  private handleMouseOut(eventMarkers) {
+    eventMarkers.clearLayers();
     this.svg.selectAll('#tips').remove();
   }
-
+  
 } // Profile Class
