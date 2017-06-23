@@ -33,7 +33,7 @@
 	height: 63px;
 	margin-left:0px;
 	overflow: hidden;
-	background-color: blue;
+	background-color: rgba(0, 0, 0, 0.8);
 	opacity: 0.9;
 	transition: all 0.4s ease-in-out;
 	border-radius: 9px;
