@@ -120,8 +120,7 @@ export class LeafletmapComponent implements OnInit {
       let layer:any = this.drawnMajorNodes.getLayer(id);
       let editedLabel = { editedLabel: newLabel, index: layer.index };
       this._emitterService.publishData(editedLabel);
-
-      
+        
     }
 
     // For markers delete;
@@ -135,22 +134,13 @@ export class LeafletmapComponent implements OnInit {
     
   ngOnInit() {
 
-      let baseMaps = {a: {i:"a", k:"k"}, b:{i:"b", k:"k"}, c:{i:"c", k:"k"}};
-
-      console.log(this._mapService.baseMaps);
-      
       // Initialize leaflet map and center at karlsruhe
-
       this._map =  L.map('leaflet-map-component', { center: [49.00, 8.40],zoom: 12, zoomControl: false });
       
       // Add tile layer to Map
       let tilelayer = this._mapService.baseMaps[this.initMap].tile;
       tilelayer["isBasemap"] = true;
       tilelayer.addTo(this._map);
-
-      this._map.eachLayer(e => console.log(e))
-
-      //console.log(this._map);
 
       // Events captured
       this._map.on('mousemove', this._onMouseMove, this);      
