@@ -34,7 +34,7 @@ export class ProfileComponent implements OnInit {
   private svg: any;
   private line: d3Shape.Line<[number, number]>;
   private area: d3Shape.Area<[number, number]>;
-  private lineData:Array<any>;
+  private incomingData:Array<any>;
   private nodeLabel:Array<any>;
   private peakData:any;
   private riverData:any;
@@ -47,27 +47,17 @@ export class ProfileComponent implements OnInit {
 
   private xScale: any;
   private yScale: any;
+  private chart: any;
   private update;
-
-
+  private counter = 0;
   
   public mouseEventsMarkers:L.FeatureGroup;
-
-  private chart: any;
-
-  private counter = 0;
-
   private map: Map;
-  private mapTest:Map
-  private map2;
-
   
   constructor(private _emitterService: EmitterService, private _mapService: MapService,) {
     
     this.width = 800 - this.margin.left - this.margin.right ;
     this.height = 400 - this.margin.top - this.margin.bottom;
-
-    this.mapTest = this._mapService.map;
 
     this._emitterService.case$.subscribe( newdata => this.switch(newdata) );
 
@@ -87,12 +77,12 @@ export class ProfileComponent implements OnInit {
   switch(newdata) {
     if (newdata.hasOwnProperty("leafletmap")) {
       this.map = newdata;
-    } else { this.lineData = newdata; this.createElevationProfile() }
+    } else { this.incomingData = newdata; this.createElevationProfile() }
   }
 
   ngOnInit() {
     this.update = false;
-    this.lineData = [];   
+    this.incomingData = [];   
     this.initSvg();
   }
  
@@ -113,12 +103,12 @@ export class ProfileComponent implements OnInit {
   private createElevationProfile(){
 
     // If data is an edited label data, remove existing node labels and re-append 
-    if ( (this.lineData.hasOwnProperty("editedLabel")) ) {
+    if ( (this.incomingData.hasOwnProperty("editedLabel")) ) {
 
       console.log("Label Edited...");
 
       this.svg.selectAll('#nodeLabels').remove();
-      let newLabel:any = this.lineData;
+      let newLabel:any = this.incomingData;
       this.nodeLabel[newLabel.index].name = newLabel.editedLabel;
       this.appendNodeLabels();
 
@@ -126,24 +116,24 @@ export class ProfileComponent implements OnInit {
     
     // If data is not peaks or river data, then draw the svg axis based on the data and plot the profile
     
-    else if ( !((this.lineData.hasOwnProperty("river")) || this.lineData.hasOwnProperty("peak")) ) {
+    else if ( !((this.incomingData.hasOwnProperty("river")) || this.incomingData.hasOwnProperty("peak")) ) {
     
       this.nodeLabel = [];
       let tempLabel = "";
-      for ( let i = 0; i < this.lineData.length; i++ ) {
-        if ( this.lineData[i].node === "Y" ) {
-          if ( !(this.lineData[i].name === tempLabel) )
-              { this.nodeLabel.push( {x: this.lineData[i].x, name: this.lineData[i].name, index: i} ) }
-        } tempLabel = this.lineData[i].name;
+      for ( let i = 0; i < this.incomingData.length; i++ ) {
+        if ( this.incomingData[i].node === "Y" ) {
+          if ( !(this.incomingData[i].name === tempLabel) )
+              { this.nodeLabel.push( {x: this.incomingData[i].x, name: this.incomingData[i].name, index: i} ) }
+        } tempLabel = this.incomingData[i].name;
       }
 
       // Scale the axis with the elevation data
       this.xScale = d3Scale.scaleLinear()
-          .domain([0, d3.max(this.lineData, function(d) { return d.x; })])
+          .domain([0, d3.max(this.incomingData, function(d) { return d.x; })])
           .range([0, this.width]);
 
       this.yScale = d3Scale.scaleLinear()
-          .domain([0, d3.max(this.lineData, function(d) { return d.y; })])
+          .domain([0, d3.max(this.incomingData, function(d) { return d.y; })])
           .range([this.height, 40]);
 
       this.xAxis = d3Axis.axisBottom(this.x).scale(this.xScale);
@@ -182,12 +172,11 @@ export class ProfileComponent implements OnInit {
           this.appendPlotArea();
           this.appendNodeLabels();
               
-        
-    } else if (this.update === true) {  this.updateElevationProfile() }
+        } else if (this.update === true) {  this.updateElevationProfile() }
     
-    this.update = true; // Make Update true 
+      this.update = true; // Make Update true 
 
-  }  else { this.insertlabels() }
+    }  else { this.insertlabels() }
 
  }
 
@@ -201,12 +190,12 @@ export class ProfileComponent implements OnInit {
     var xScale = this.xScale;                    
     var yScale = this.yScale;
   
-    if ( this.lineData.hasOwnProperty("river") ) {
+    if ( this.incomingData.hasOwnProperty("river") ) {
 
-      // -------------------------------------------
-      this.riverData = this.lineData;
+      //-------------------------------------------o
+      this.riverData = this.incomingData;
       let river:Array<any> = this.riverData.river;
-      // -------------------------------------------
+      //-------------------------------------------o
 
       if (river.length > 0) {
         var riverLabels = this.svg.selectAll("g rivers").data(river); 
@@ -231,17 +220,17 @@ export class ProfileComponent implements OnInit {
       }
     }
 
-    if ( this.lineData.hasOwnProperty("peak") ) {
+    if ( this.incomingData.hasOwnProperty("peak") ) {
 
       // -------------------------------------------
-      this.peakData = this.lineData;
+      this.peakData = this.incomingData;
       let peak:Array<any> = this.peakData.peak;
       // ------------------------------------------- 
 
       if (peak.length > 0) {
-        var peakLabels = this.svg.selectAll("g peaks").data(peak); 
-        var peaksLabelsEnter = peakLabels.enter().append("g");  
-        var circle = peaksLabelsEnter.append("circle")
+        let peakLabels = this.svg.selectAll("g peaks").data(peak); 
+        let peaksLabelsEnter = peakLabels.enter().append("g");  
+        let circle = peaksLabelsEnter.append("circle")
           .attr("r", 5)
           .attr('cx', function(d:any) { return xScale(d.x); })
           .attr('cy', function(d:any) { return yScale(d.y); })
@@ -252,8 +241,8 @@ export class ProfileComponent implements OnInit {
           .text( (d: any) => (d.name) )
           .attr("id", "peaks")
           .attr("transform", function(d){
-            var x = xScale(d.x);
-            var y = yScale(d.y) - 10;
+            let x = xScale(d.x);
+            let y = yScale(d.y) - 10;
             return "translate(" + x + "," + y + ") rotate(-45)" })
           .attr("font_family", "sans-serif")
           .attr("font-size", "14px")
@@ -299,8 +288,6 @@ export class ProfileComponent implements OnInit {
 
     let xScale = this.xScale;
     let yScale = this.yScale;
-
-    //console.log(this.nodeLabel);
 
     let labels = this.svg.selectAll("g nodeTexts")
                 .data(this.nodeLabel)
@@ -349,7 +336,7 @@ export class ProfileComponent implements OnInit {
   private appendPlotArea() {
 
     //----------------------------------------
-    let data = this.lineData;
+    let data = this.incomingData;
     let svg = this.svg;
     let xScale = this.xScale;
     let yScale = this.yScale;
@@ -359,19 +346,19 @@ export class ProfileComponent implements OnInit {
     this.mouseEventsMarkers = new L.FeatureGroup(markers);
     let eventMarkers = this.mouseEventsMarkers;
     map.addLayer(eventMarkers);
-    let markerIcon = L.icon({ iconUrl: 'http://www.iconsdb.com/icons/preview/royal-blue/map-marker-2-xxl.png', 
+    let markerIcon = L.icon({ iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/256/map-marker-icon.png', 
                                     iconSize: [30,30],
                                     iconAnchor: [15,35]});
     //----------------------------------------                               
     this.svg.append("path")
-        .datum(this.lineData)
+        .datum(this.incomingData)
         .attr("class", "line")
         .attr("d", this.line)
         .attr('stroke','red')
         .attr("fill", "none");
      
     this.svg.append("path")
-        .datum(this.lineData)
+        .datum(this.incomingData)
         .attr("class", "area")
         .attr("d", this.area)
         .attr("fill", "lightsteelblue")
@@ -394,15 +381,15 @@ export class ProfileComponent implements OnInit {
             // 3. Get the closest point on the graph data
             var nearest = (closest(data,mouseX));
             // 4. Create marker and add to layer
-            let marker = L.marker([nearest.geometry.lng, nearest.geometry.lat], {icon: markerIcon });
+            var marker = L.marker([nearest.geometry.lng, nearest.geometry.lat], {icon: markerIcon });
             eventMarkers.addLayer(marker);
             //------------oooooooooooooooooooooo---------------------
 
             //------Display Text and Circle on the Profile-----------
             // 1. Format x,y,z number data
-            let lng = Math.round(nearest.geometry.lng * 100) / 100;
-            let lat = Math.round(nearest.geometry.lat * 100) / 100;
-            let alt = nearest.geometry.alt|0;
+            var lng = Math.round(nearest.geometry.lng * 100) / 100;
+            var lat = Math.round(nearest.geometry.lat * 100) / 100;
+            var alt = nearest.geometry.alt|0;
             //2. Show XYZ figures
             svg.append("g")
               .append("text")
@@ -430,7 +417,7 @@ export class ProfileComponent implements OnInit {
       .on("mouseleave", d => this.handleMouseOut(eventMarkers));
         
       let hidden = this.svg.selectAll("g hiddenTicks")
-          .data(this.lineData);
+          .data(this.incomingData);
       let hiddenEnter = hidden.enter()
           .append("g");
 

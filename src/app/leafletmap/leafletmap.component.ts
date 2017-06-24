@@ -469,10 +469,12 @@ export class LeafletmapComponent implements OnInit {
     public getElevation(featurePoints:Array<any>): void {
 
       let request = this.formatToGoogleElevationRequest(featurePoints, this.GOOGLE_API_KEY);
-
       let temp = this._elevationRequest.getRequest(request).subscribe(  data => { this.sendElevationToProfile(data); },
-                                                                        err => console.error(err));
-      this.getNearestPoints();
+      
+                                                                       err => alert("Elevation data could not be retrieved at this time. Please try again."));
+      if (!(this.elevationData === undefined)) {
+        this.getNearestPoints();
+      }
     }
 
     /**
@@ -484,7 +486,7 @@ export class LeafletmapComponent implements OnInit {
      */
     public sendElevationToProfile(elevation:any):void {
       console.log('%cRaw data for the line graph', 'background:red; color:white');console.log(elevation);
-
+      
       this.elevationData = elevation;
       let n = elevation.results.length;
       
