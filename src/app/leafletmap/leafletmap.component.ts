@@ -67,6 +67,7 @@ export class LeafletmapComponent implements OnInit {
   private initMap = 4;
 
   // Elevation profile variables
+  public bufferRadius = 5000; // Meters
   public lineLeafletID:number;
   public placesLeafletID:number;
   public drawnLine:L.Polyline;
@@ -471,10 +472,7 @@ export class LeafletmapComponent implements OnInit {
       let request = this.formatToGoogleElevationRequest(featurePoints, this.GOOGLE_API_KEY);
       let temp = this._elevationRequest.getRequest(request).subscribe(  data => { this.sendElevationToProfile(data); },
       
-                                                                       err => alert("Elevation data could not be retrieved at this time. Please try again."));
-      if (!(this.elevationData === undefined)) {
-        this.getNearestPoints();
-      }
+                                                                       err => alert("Elevation data could not be retrieved at this time. Please try again.")); 
     }
 
     /**
@@ -488,6 +486,7 @@ export class LeafletmapComponent implements OnInit {
       console.log('%cRaw data for the line graph', 'background:red; color:white');console.log(elevation);
       
       this.elevationData = elevation;
+      ///console.log(this.elevationData);
       let n = elevation.results.length;
       
       let sumLength = 0;
@@ -523,6 +522,8 @@ export class LeafletmapComponent implements OnInit {
 
       console.log('%cElevation data sent to profile component', 'background:purple; color:white'); //console.log(tempData);
       console.log('%cWaiting for peaks data......', 'background:orange; color:white');
+      
+      this.getNearestPoints();
     } // sendElevationToProfile
 
   /**
@@ -573,51 +574,52 @@ export class LeafletmapComponent implements OnInit {
      */
     public getNearestPoints(){
         
-        // Create a turf line along the nodes
-        //let multiLine = turf.lineString([this.storedPoints_LatLng]);
-        let randomPoint:L.Marker;
-        let bufferedPolyline:L.Polyline;
-        let randomPointMarkers = [];
-        let randomPlaces = [];
-        let buffered;
+        if(!(this.elevationData === undefined)){
+          // Create a turf line along the nodes
+          let randomPoint:L.Marker;
+          let bufferedPolyline:L.Polyline;
+          let randomPointMarkers = [];
+          let randomPlaces = [];
+          let buffered;
 
-        // Get bounding box from points
-        let allLat = [];
-        let allLng = [];
+          // Get bounding box from points
+          let allLat = [];
+          let allLng = [];
 
-        for (let i = 0; i < this.storedPoints_LatLng.length; i++) {
-          allLat.push(this.storedPoints_LatLng[i].lat);
-          allLng.push(this.storedPoints_LatLng[i].lng);
+          for (let i = 0; i < this.storedPoints_LatLng.length; i++) {
+            allLat.push(this.storedPoints_LatLng[i].lat);
+            allLng.push(this.storedPoints_LatLng[i].lng);
+          }
+          
+          // Store the bounds in leaflet L.LatLng format
+          let topRight = L.latLng(Math.max.apply(Math, allLat), Math.max.apply(Math, allLng)); 
+          let bottomLeft = L.latLng(Math.min.apply(Math, allLat), Math.min.apply(Math, allLng));
+          let drawnBounds:L.LatLngBounds = L.latLngBounds(bottomLeft, topRight);
+
+          //console.log('Bounds: Top Right: '); console.log(topRight); console.log('Bounds: Bottom Left: '); console.log(bottomLeft);
+          
+          let bufferDistance = this.bufferRadius; // Meters
+          let line = this.drawnLine.toGeoJSON();
+          buffered = turf.buffer(line, bufferDistance, 'meters');                   
+
+          // TO Get points of interest from OverPass API within the bounding box
+          
+          let nearestPeaks:string = 'node["natural"="peak"]'; // request for peak points
+          let nearestRivers:string = 'way["waterway"="river"]'; // request for peak points
+          let bbox:string = '('+ (String(bottomLeft.lat)) + ',' + (String(bottomLeft.lng)) + ',' + (String(topRight.lat)) + ',' + (String(topRight.lng)) + ')' + ';out;';
+          let bboxRivers:string = '('+ (String(bottomLeft.lat)) + ',' + (String(bottomLeft.lng)) + ',' + (String(topRight.lat)) + ',' + (String(topRight.lng)) + ')' + ';out geom;';
+
+          nearestPeaks = 'http://overpass.osm.rambler.ru/cgi/interpreter?data=[out:json];' + encodeURIComponent(nearestPeaks) +  encodeURIComponent(bbox);
+          nearestRivers = 'http://overpass.osm.rambler.ru/cgi/interpreter?data=[out:json];' + encodeURIComponent(nearestRivers) +  encodeURIComponent(bboxRivers);    
+    
+          this._pointsOfInterestRequest.getRequest(nearestPeaks).subscribe(   data => { this.processPeaks(data, buffered); },
+                                                                                          err => console.error(err));
+
+          this._pointsOfInterestRequest.getRequest(nearestRivers).subscribe(  data => { this.processRivers(data); },
+                                                                                          err => console.error(err));      
+        
         }
-        
-        // Store the bounds in leaflet L.LatLng format
-        let topRight = L.latLng(Math.max.apply(Math, allLat), Math.max.apply(Math, allLng)); 
-        let bottomLeft = L.latLng(Math.min.apply(Math, allLat), Math.min.apply(Math, allLng));
-        let drawnBounds:L.LatLngBounds = L.latLngBounds(bottomLeft, topRight);
-
-        //console.log('Bounds: Top Right: '); console.log(topRight); console.log('Bounds: Bottom Left: '); console.log(bottomLeft);
-        
-        let bufferDistance = 5000; //Meters
-        let line = this.drawnLine.toGeoJSON();
-        buffered = turf.buffer(line, bufferDistance, 'meters');                   
-
-         // TO Get points of interest from OverPass API within the bounding box
-        
-        let nearestPeaks:string = 'node["natural"="peak"]'; // request for peak points
-        let nearestRivers:string = 'way["waterway"="river"]'; // request for peak points
-        let bbox:string = '('+ (String(bottomLeft.lat)) + ',' + (String(bottomLeft.lng)) + ',' + (String(topRight.lat)) + ',' + (String(topRight.lng)) + ')' + ';out;';
-        let bboxRivers:string = '('+ (String(bottomLeft.lat)) + ',' + (String(bottomLeft.lng)) + ',' + (String(topRight.lat)) + ',' + (String(topRight.lng)) + ')' + ';out geom;';
-
-        nearestPeaks = 'http://overpass.osm.rambler.ru/cgi/interpreter?data=[out:json];' + encodeURIComponent(nearestPeaks) +  encodeURIComponent(bbox);
-        nearestRivers = 'http://overpass.osm.rambler.ru/cgi/interpreter?data=[out:json];' + encodeURIComponent(nearestRivers) +  encodeURIComponent(bboxRivers);    
-  
-        this._pointsOfInterestRequest.getRequest(nearestPeaks).subscribe(   data => { this.processPeaks(data, buffered); },
-                                                                                        err => console.error(err));
-
-        this._pointsOfInterestRequest.getRequest(nearestRivers).subscribe(  data => { this.processRivers(data); },
-                                                                                        err => console.error(err));      
-        
-  }  
+}  
 
 
   /**

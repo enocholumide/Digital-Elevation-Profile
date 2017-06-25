@@ -347,8 +347,8 @@ export class ProfileComponent implements OnInit {
     let eventMarkers = this.mouseEventsMarkers;
     map.addLayer(eventMarkers);
     let markerIcon = L.icon({ iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/256/map-marker-icon.png', 
-                                    iconSize: [30,30],
-                                    iconAnchor: [15,35]});
+                              iconSize: [30,30],
+                              iconAnchor: [15,35]});
     //----------------------------------------                               
     this.svg.append("path")
         .datum(this.incomingData)
@@ -393,11 +393,12 @@ export class ProfileComponent implements OnInit {
             //2. Show XYZ figures
             svg.append("g")
               .append("text")
+              .text("X: " + lng + " | " + "Y: " + lat + " | " + "Z: " + alt+"m")
               .attr("id", "tips")
+              .attr("class", "tips")
               .attr('dx', xScale(nearest.x))
               .attr('dy', yScale(nearest.y)-10)
-              .attr("text-anchor", "middle")
-              .text("X: " + lng + " | " + "Y: " + lat + " | " + "Z: " + alt+"m");
+              .attr("text-anchor", "middle");
             //3. Append circles
             svg.append("g")
               .append("circle")
@@ -412,7 +413,7 @@ export class ProfileComponent implements OnInit {
             var i=0, minDiff=1000, ans;
             for(var i = 0; i < array.length; i++){ var m=Math.abs(num-array[i].x);
                 if( m<minDiff ){ minDiff=m; ans=array[i]} } return ans
-            }  
+          }  
         })
       .on("mouseleave", d => this.handleMouseOut(eventMarkers));
         
@@ -427,7 +428,7 @@ export class ProfileComponent implements OnInit {
           .attr("x1", (d: any) => xScale(d.x) )
           .attr("x2", (d: any) => xScale(d.x) )   
           .attr("y1", this.height )  
-          .attr("y2", (d: any) => yScale(d.y)  );
+          .attr("y2", (d: any) => yScale(d.y) );
   }
 
   /**
