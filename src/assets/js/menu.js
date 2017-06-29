@@ -27,16 +27,42 @@ $(document).ready(function(){
 
     $("#item03").click(function(){
         $(".informationBlock").hide();
+        $("#informationBlock").toggle();
+        $("#geological").hide();
+        $("#moreInfo").hide();
+        $("#legend").hide();
+        $("#impressum").hide();
+    });
+
+    $("#item02").click(function(){
+        $("#geological").toggle();
+        $("#informationBlock").hide();
+        $("#moreInfo").hide();
+        $("#legend").hide();
+        $("#impressum").hide();
+    });
+
+    $("#item03").click(function(){
+        $("#informationBlock").hide();
+        $("#geological").hide();
+        $("#legend").hide();
+        $("#impressum").hide(); 
         $("#moreInfo").toggle();
     });
 
     $("#item04").click(function(){
-        $(".informationBlock").hide();
+        $("#informationBlock").hide();
+        $("#moreInfo").hide();
+        $("#geological").hide();
+        $("#impressum").hide();
         $("#legend").toggle();
     });
 
     $("#item05").click(function(){
-        $(".informationBlock").hide();
+        $("#informationBlock").hide();
+        $("#moreInfo").hide();
+        $("#legend").hide();
+        $("#geological").hide();
         $("#impressum").toggle();
     });
 
