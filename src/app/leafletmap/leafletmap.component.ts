@@ -257,6 +257,7 @@ export class LeafletmapComponent implements OnInit {
     protected __onDrawEdited(e): void {
 
       console.log('%cEvent: draw:edited ', 'color: grey');
+      console.log(e)
 
       let profileVertex = [];
       let vertex:L.Marker;
@@ -353,6 +354,11 @@ export class LeafletmapComponent implements OnInit {
       this.totalVertix = 0;           // 3.
       let partVertixRatio = [];       // 4.
       let partVertixNumber = [];      // 5.
+
+      // Trim nodes if more than 6 
+      if (this.storedPoints_LatLng.length > 6) {
+        this.storedPoints_LatLng = this.storedPoints_LatLng.splice(0,6);
+      }
 
       for (let i = 0; i < (this.storedPoints_LatLng.length - 1); i++) {
         // 1.
@@ -953,7 +959,7 @@ export class LeafletmapComponent implements OnInit {
 
     // 5.5 Format filtered items to x and y for profile component
     let temp = [];
-    let tempData = []
+    let tempData = [];
     let exist: boolean = false;
     for (let i = 0; i < sortedSnappedPeakPoints.length; i++) {
       let newName = sortedSnappedPeakPoints[i].name;
