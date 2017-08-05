@@ -45,17 +45,17 @@ export class LeafletmapComponent implements OnInit {
   @Output() edited: EventEmitter<any> = new EventEmitter();
   @Output() deleted: EventEmitter<any> = new EventEmitter();
 
-  private peaksReady:EventEmitter<any> = new EventEmitter();
+  public peaksReady:EventEmitter<any> = new EventEmitter();
 
   public peaksGraphData = [];
   public riverGraphData = [];
   public peaksCurrentData = [];
   public markerLabel = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-  private peaksData: GeoJSONFeatureCollection<any>;
-  private elevationData;
-  private peaksDataArray = [];
-  private chartData = [];
+  public peaksData: GeoJSONFeatureCollection<any>;
+  public elevationData;
+  public peaksDataArray = [];
+  public chartData = [];
   public majorNodeIndex = [];
   public fullSinglePart = [];
   public storedPoints_LatLng = [];
@@ -64,7 +64,7 @@ export class LeafletmapComponent implements OnInit {
   public totalVertix:number;
 
   // BaseMap Init
-  private initMap = 4;
+  public initMap = 4;
 
   // Elevation profile variables
   public bufferRadius = 5000; // Meters
@@ -102,11 +102,11 @@ export class LeafletmapComponent implements OnInit {
 
   constructor
     ( 
-    private _http: Http, 
-    private _elevationRequest: GeneralHttpService,
-    private _pointsOfInterestRequest: GeneralHttpService,
-    private _emitterService: EmitterService,
-    private _mapService: MapService,
+    public _http: Http, 
+    public _elevationRequest: GeneralHttpService,
+    public _pointsOfInterestRequest: GeneralHttpService,
+    public _emitterService: EmitterService,
+    public _mapService: MapService,
     ) { }
 
 
@@ -316,10 +316,12 @@ export class LeafletmapComponent implements OnInit {
    * Thus, we will assume the earth is spherical, for now (ignoring ellipsoidal effects) 
    * – which is more accurate, well, we may not need so much accurracy for now.
    * Perhaps, this can be an improvement moving forward; 
-   * Especially if the user wants elevation profile betwen Karlsruhe and Moscow :-)
+   * Especially if the user wants elevation profile between Karlsruhe and Moscow :-)
    * 
    * For longer distances, this is purely a SECOND GEODETIC MAJOR TASK problem
-   * Perhaps, this can be an improvement moving forward. :-) this.more_work :-) 
+   * Perhaps, this can be an improvement moving forward. :-) this.more_work :-)
+   * 
+   * Enoch
    */
     public _getDistance(point1:L.LatLng, point2:L.LatLng):number {
        
@@ -422,7 +424,7 @@ export class LeafletmapComponent implements OnInit {
         // Here, get the lat and lng for a line part and ...
         tempArray = this._getfractionPoints(this.storedPoints_LatLng[i], this.storedPoints_LatLng[i+1], partVertixNumber[i]);
 
-        // create a bounding buffer for each part
+        // ... create a bounding buffer for each part
         tempPart = tempArray.slice(0);
         let n = tempPart.length;
         tempPart.splice(0, 0, this.storedPoints_LatLng[i]);
@@ -466,7 +468,7 @@ export class LeafletmapComponent implements OnInit {
 
       // Here, we have the coords of the nodes and all vertix
       // The vertix coords will be sent for z - values
-      //  console.log('Node Coords'); console.log(this.storedPoints_LatLng);console.log('Total Vertices'); console.log(this.featureVertices);
+      // console.log('Node Coords'); console.log(this.storedPoints_LatLng);console.log('Total Vertices'); console.log(this.featureVertices);
 
       // Proceed to get elevation for all all vertix
       this.getElevation(featurePoints);
@@ -483,7 +485,7 @@ export class LeafletmapComponent implements OnInit {
 
     /**
      * Publish elevation data to the profile
-     * NOTE: Format is different from other server.
+     * NOTE: Format is different from other servers.
      * 
      * Enoch
      * @param elevation Raw data from google server; 
@@ -646,7 +648,7 @@ export class LeafletmapComponent implements OnInit {
    * 
    * */
   
-  private processPeaks(peak:any, buffered:GeoJSONFeature<GeoJSONPolygon>):void{
+  public processPeaks(peak:any, buffered:GeoJSONFeature<GeoJSONPolygon>):void{
         
         if (peak.elements.length > 0) {
 
@@ -808,7 +810,7 @@ export class LeafletmapComponent implements OnInit {
  * Enoch.
  * @param data Raw peak data from OverPass API (OSM)
  */
-  private sendPeaksToProfile(data:any){
+  public sendPeaksToProfile(data:any){
 
     // console.log(data);
 
@@ -998,7 +1000,7 @@ export class LeafletmapComponent implements OnInit {
    * Enoch.
    * @param river Raw river data from OverPass API (OSM)
    */
-  private processRivers(river:any){
+  public processRivers(river:any){
 
     // 1. First check if rivers were found
     // --------------------------------------
@@ -1211,7 +1213,7 @@ export class LeafletmapComponent implements OnInit {
  * Enoch
  * @param e 
  */
-private removeBaseMap(e) { if(e.isBasemap){ this._map.removeLayer(e) } }
+public removeBaseMap(e) { if(e.isBasemap){ this._map.removeLayer(e) } }
 
 /**
 * Method called from the html template on select of icons on the map
@@ -1221,7 +1223,7 @@ private removeBaseMap(e) { if(e.isBasemap){ this._map.removeLayer(e) } }
 * Enoch
 * @param i Index of basemap 
 */
-private _changeBasemapLayer(i: number) {
+public _changeBasemapLayer(i: number) {
 
   // Remove existing tile layers
   this._map.eachLayer(e => this.removeBaseMap(e));
@@ -1297,7 +1299,7 @@ protected _geocoderMenu(e):void {
  * 
  * Enoch.
  * */
-private plotPerpendicular (peakName:string, a:L.LatLng, b: number, c:number, plot?:boolean, forcedPlot?:string, send?:string):number {
+public plotPerpendicular (peakName:string, a:L.LatLng, b: number, c:number, plot?:boolean, forcedPlot?:string, send?:string):number {
     // a = peakPoint
     // b = (lowest) feature vertix Index
     // c = direction - East or West
@@ -1704,7 +1706,7 @@ public addFeaturePoints(item:any, partNo:number, category?:string):Array<any>{
    * Enoch
    * @param layer Event layer from the leaflet-draw plugin 
    */
-  private updateNodeMarkers(layer?){
+  public updateNodeMarkers(layer?){
 
       if (layer === undefined){
         layer = this.tempMajorNodeLayer;
