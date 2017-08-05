@@ -26,35 +26,35 @@ import { LeafletmapComponent } from '../leafletmap/leafletmap.component';
 
 export class ProfileComponent implements OnInit {
 
-  private margin = {top: 50, right: 40, bottom: 50, left: 40};
-  private width: number;
-  private height: number;
-  private x: any;
-  private y: any;
-  private svg: any;
-  private line: d3Shape.Line<[number, number]>;
-  private area: d3Shape.Area<[number, number]>;
-  private incomingData:Array<any>;
-  private nodeLabel:Array<any>;
-  private peakData:any;
-  private riverData:any;
+  public margin = {top: 50, right: 40, bottom: 50, left: 40};
+  public width: number;
+  public height: number;
+  public x: any;
+  public y: any;
+  public svg: any;
+  public line: d3Shape.Line<[number, number]>;
+  public area: d3Shape.Area<[number, number]>;
+  public incomingData:Array<any>;
+  public nodeLabel:Array<any>;
+  public peakData:any;
+  public riverData:any;
 
-  private xSCALE: any;
-  private ySCALE: any;
+  public xSCALE: any;
+  public ySCALE: any;
 
-  private xAxis: any;
-  private yAxis: any;
+  public xAxis: any;
+  public yAxis: any;
 
-  private xScale: any;
-  private yScale: any;
-  private chart: any;
-  private update;
-  private counter = 0;
+  public xScale: any;
+  public yScale: any;
+  public chart: any;
+  public update;
+  public counter = 0;
   
   public mouseEventsMarkers:L.FeatureGroup;
-  private map: Map;
+  public map: Map;
   
-  constructor(private _emitterService: EmitterService, private _mapService: MapService,) {
+  constructor(public _emitterService: EmitterService, public _mapService: MapService,) {
     
     this.width = 800 - this.margin.left - this.margin.right ;
     this.height = 400 - this.margin.top - this.margin.bottom;
@@ -86,7 +86,7 @@ export class ProfileComponent implements OnInit {
     this.initSvg();
   }
  
-   private initSvg() {
+   public initSvg() {
     this.svg = d3.select("svg")
                  .append("g")
                  .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
@@ -100,7 +100,7 @@ export class ProfileComponent implements OnInit {
      * 
      * Enoch
      */
-  private createElevationProfile(){
+  public createElevationProfile(){
 
     // If data is an edited label data, remove existing node labels and re-append 
     if ( (this.incomingData.hasOwnProperty("editedLabel")) ) {
@@ -185,7 +185,7 @@ export class ProfileComponent implements OnInit {
   * 
   * Enoch
   */
- private insertlabels() {
+ public insertlabels() {
 
     var xScale = this.xScale;                    
     var yScale = this.yScale;
@@ -257,7 +257,7 @@ export class ProfileComponent implements OnInit {
   * 
   * Enoch
   */
-  private updateElevationProfile() {
+  public updateElevationProfile() {
 
       console.log("Updating Profile...");
 
@@ -284,7 +284,7 @@ export class ProfileComponent implements OnInit {
    * 
    * Enoch
    */
-  private appendNodeLabels() {
+  public appendNodeLabels() {
 
     let xScale = this.xScale;
     let yScale = this.yScale;
@@ -333,7 +333,7 @@ export class ProfileComponent implements OnInit {
    * 
    * Enoch
    */
-  private appendPlotArea() {
+  public appendPlotArea() {
 
     //----------------------------------------
     let data = this.incomingData;
@@ -438,7 +438,7 @@ export class ProfileComponent implements OnInit {
    * Enoch
    * @param eventMarkers 
    */
-  private handleMouseOut(eventMarkers) {
+  public handleMouseOut(eventMarkers) {
     eventMarkers.clearLayers();
     this.svg.selectAll('#tips').remove();
   }
